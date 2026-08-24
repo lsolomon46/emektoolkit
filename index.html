@@ -1,0 +1,1223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Kriah Exam (Decoding and Fluency) · Grades 2-8 · Emek Hebrew Academy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=David+Libre:wght@400;500;700&family=Assistant:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#1F3864; --navy-deep:#152744; --gold:#BF9000; --gold-soft:#E8D9A8;
+  --paper:#FAF7F0; --ink:#22252B; --line:#D9D2C3;
+  --err:#C0392B; --err-bg:#FBEAE8; --ok:#2E7D4F; --grey:#8A8578;
+  --bkt-letters:#C0392B; --bkt-letters-bg:#FBEAE8;
+  --bkt-nikud:#96690A; --bkt-nikud-bg:#FBF3D9;
+  --bkt-rules:#5B3E96; --bkt-rules-bg:#EFE8FA;
+  --bkt-gen:#5A5648; --bkt-gen-bg:#EEEAE0;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+body{margin:0; font-family:'Assistant',system-ui,sans-serif; background:var(--paper); color:var(--ink);}
+.screen{display:none; max-width:880px; margin:0 auto; padding:20px 18px 60px;}
+.screen.active{display:block;}
+header.app{background:var(--navy); color:#fff; padding:14px 18px; display:flex; align-items:baseline; gap:12px;}
+header.app h1{font-size:18px; margin:0; font-weight:700; letter-spacing:.02em;}
+header.app .band{color:var(--gold-soft); font-weight:600; font-size:14px;}
+header.app .who{margin-left:auto; font-size:14px; opacity:.9;}
+h2.step{font-size:15px; text-transform:uppercase; letter-spacing:.12em; color:var(--navy); margin:26px 0 6px; border-bottom:2px solid var(--gold); padding-bottom:6px; display:flex; align-items:baseline;}
+h2.step .hint{margin-left:auto; text-transform:none; letter-spacing:0; font-weight:400; color:var(--grey); font-size:13px;}
+label{display:block; font-weight:600; font-size:14px; margin:14px 0 4px;}
+select,input[type=text]{width:100%; padding:11px 12px; font-size:16px; border:1.5px solid var(--line); border-radius:8px; background:#fff; font-family:inherit;}
+button{font-family:inherit; cursor:pointer; border:none; border-radius:10px; font-weight:700;}
+.btn-primary{background:var(--navy); color:#fff; font-size:17px; padding:14px 26px; width:100%; margin-top:20px;}
+.btn-primary:disabled{background:#B8BCC6;}
+.btn-ghost{background:none; color:var(--navy); font-size:14px; padding:10px 4px; text-decoration:underline; font-weight:600;}
+.btn-stop{background:var(--err); color:#fff; font-size:15px; padding:10px 18px;}
+.notice{font-size:13.5px; background:#fff; border:1px solid var(--line); border-left:4px solid var(--gold); border-radius:8px; padding:10px 12px; margin:12px 0; color:#4A4638;}
+.notice.err{border-left-color:var(--err); color:var(--err);}
+/* timer bar */
+.timerbar{position:sticky; top:0; z-index:5; background:var(--paper); padding:10px 0 8px; display:flex; align-items:center; gap:14px; border-bottom:1px solid var(--line);}
+.ring{width:64px; height:64px; flex:0 0 64px;}
+.ring text{font:700 20px 'Assistant'; fill:var(--navy);}
+.ring.warn text{fill:var(--err);}
+.ring circle.track{fill:none; stroke:#E7E1D2; stroke-width:6;}
+.ring circle.prog{fill:none; stroke:var(--navy); stroke-width:6; stroke-linecap:round; transform:rotate(-90deg); transform-origin:50% 50%; transition:stroke .3s;}
+.ring.warn circle.prog{stroke:var(--err);}
+.tstate{font-size:14px; color:var(--grey); flex:1;}
+.tstate b{color:var(--navy); display:block; font-size:15px;}
+/* word grid */
+.grid{direction:rtl; display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-top:14px;}
+.word{background:#fff; border:1.5px solid var(--line); border-radius:10px; padding:8px 6px 10px; text-align:center; display:flex; justify-content:center; direction:rtl;}
+.seg{font-family:'David Libre',serif; font-size:30px; line-height:1.5; padding:0 3px; border-radius:6px; cursor:pointer; border-bottom:3px solid transparent;}
+.seg + .seg{margin-right:2px; border-right:1px dotted #CFC7B4;}
+.seg.err{color:var(--err); background:var(--err-bg); border-bottom-color:var(--err);}
+/* passage */
+.passage{direction:rtl; font-family:'David Libre',serif; font-size:32px; line-height:2.15; background:#fff; border:1.5px solid var(--line); border-radius:12px; padding:18px 22px; margin-top:14px;}
+.pw{cursor:pointer; padding:1px 4px; border-radius:6px; border-bottom:3px solid transparent;}
+.pw.err{color:var(--err); background:var(--err-bg); border-bottom-color:var(--err);}
+.beyond{opacity:.22;}
+.lastmark{outline:3px solid var(--gold); outline-offset:2px; border-radius:6px;}
+.pick-last .seg,.pick-last .pw{cursor:crosshair;}
+/* results */
+.scorecards{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-top:14px;}
+.card{background:#fff; border:1.5px solid var(--line); border-radius:12px; padding:14px; text-align:center;}
+.card .n{font-size:34px; font-weight:700; color:var(--navy); line-height:1;}
+.card .l{font-size:12.5px; text-transform:uppercase; letter-spacing:.08em; color:var(--grey); margin-top:6px;}
+.card .band-tag{display:inline-block; margin-top:8px; font-size:12px; font-weight:700; padding:3px 10px; border-radius:20px;}
+.b-bench{background:#E3F1E8; color:var(--ok);} .b-strat{background:#FBF3D9; color:#8a6d00;} .b-int{background:var(--err-bg); color:var(--err);}
+table.skills{width:100%; border-collapse:collapse; margin-top:10px; background:#fff; border-radius:10px; overflow:hidden; border:1.5px solid var(--line);}
+table.skills th{background:var(--navy); color:#fff; font-size:12.5px; padding:8px 4px;}
+table.skills td{text-align:center; padding:9px 4px; font-size:16px; border-top:1px solid var(--line);}
+table.skills td.hot{background:var(--err-bg); color:var(--err); font-weight:700;}
+.gapflag{margin-top:14px; padding:12px 14px; border-radius:10px; font-size:15px;}
+.gapflag.bad{background:var(--err-bg); border:1px solid var(--err); color:var(--err);}
+.gapflag.good{background:#E3F1E8; border:1px solid var(--ok); color:var(--ok);}
+.saveline{margin-top:18px; font-size:14.5px; font-weight:600;}
+.saveline.ok{color:var(--ok);} .saveline.fail{color:var(--err);}
+/* analytics */
+.anlfilters{display:flex; gap:12px; margin-top:10px;}
+.anlfilters select{flex:1;}
+.stack{display:flex; height:30px; border-radius:8px; overflow:hidden; margin:4px 0 2px; background:#EEE9DC;}
+.stack div{color:#fff; font-size:12.5px; font-weight:700; display:flex; align-items:center; justify-content:center; min-width:0;}
+.st-b{background:var(--ok);} .st-s{background:#C9A227;} .st-i{background:var(--err);}
+.stlbl{font-size:13px; font-weight:600; margin-top:12px;}
+.hrow{display:flex; align-items:center; gap:8px; margin:5px 0;}
+.hrow .hl{width:44px; font-size:13px; font-weight:700; color:var(--navy); text-align:right;}
+.hrow .htrack{flex:1; background:#EEE9DC; border-radius:6px; height:20px;}
+.hrow .hfill{background:var(--navy); height:100%; border-radius:6px; min-width:2px;}
+.hrow .hn{width:34px; font-size:13px; color:var(--grey);}
+/* diagnostic */
+.lvlgrid{display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:12px; margin-top:14px;}
+.lvlcard{background:#fff; border:1.5px solid var(--line); border-radius:12px; padding:14px; cursor:pointer;}
+.lvlcard:hover{border-color:var(--navy);}
+.lvlcard .lid{font-size:22px; font-weight:700; color:var(--navy);}
+.lvlcard .ldesc{font-size:13px; color:var(--grey); margin-top:2px;}
+.lvlcard .lscore{margin-top:8px; font-size:13px; font-weight:700;}
+.lvlcard .lscore.good{color:var(--ok);} .lvlcard .lscore.mid{color:#8a6d00;} .lvlcard .lscore.low{color:var(--err);}
+.diagbig{direction:rtl; font-family:'David Libre',serif; font-size:96px; text-align:center; background:#fff; border:1.5px solid var(--line); border-radius:16px; padding:50px 20px; margin-top:16px; min-height:220px; display:flex; align-items:center; justify-content:center;}
+.diagmeta{display:flex; justify-content:space-between; align-items:baseline; margin-top:14px; font-size:14px; color:var(--grey);}
+.diagbtns{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:16px;}
+.btn-correct{background:var(--ok); color:#fff; font-size:19px; padding:18px;}
+.btn-wrong{background:var(--err); color:#fff; font-size:19px; padding:18px;}
+@media (max-width:560px){ .diagbig{font-size:64px; min-height:160px;} .grid{grid-template-columns:repeat(3,1fr);} .seg{font-size:26px;} .passage{font-size:27px;} }
+/* practice sheet */
+.wsHeader{border-bottom:2px solid var(--gold); padding-bottom:10px; margin-bottom:16px;}
+.wsSchool{font-size:12.5px; text-transform:uppercase; letter-spacing:.1em; color:var(--grey);}
+.wsTitle{font-size:22px; font-weight:700; color:var(--navy); margin-top:2px;}
+.wsSub{font-size:14px; color:var(--grey); margin-top:2px;}
+.wsSkill{background:#fff; border:1.5px solid var(--line); border-radius:12px; padding:14px 16px; margin-bottom:12px;}
+.wsSkillHead{font-weight:700; color:var(--navy); font-size:15px; margin-bottom:8px;}
+.wsCount{font-weight:400; color:var(--err); font-size:13px;}
+.wsItems{direction:rtl; display:flex; flex-wrap:wrap; gap:10px;}
+.wsItem{font-family:'David Libre',serif; font-size:24px; background:var(--paper); border:1px solid var(--line); border-radius:8px; padding:6px 12px;}
+.wsSign{margin-top:24px; font-size:13px; color:var(--grey); font-style:italic;}
+/* annotated results passage */
+.wsLegend{display:flex; flex-wrap:wrap; gap:10px; margin:10px 0 4px; font-size:12.5px;}
+.legchip{display:flex; align-items:center; gap:6px; padding:4px 10px; border-radius:20px; background:#fff; border:1px solid var(--line);}
+.legchip .dot{width:10px; height:10px; border-radius:50%; display:inline-block;}
+.annoBlock{margin-top:10px;}
+.annoLabel{font-size:12.5px; font-weight:700; color:var(--grey); text-transform:uppercase; letter-spacing:.08em; margin:14px 0 4px;}
+.annoPassage{direction:rtl; font-family:'David Libre',serif; font-size:26px; line-height:2.15; background:#fff; border:1.5px solid var(--line); border-radius:12px; padding:16px 20px;}
+.aw{padding:1px 5px; border-radius:6px; border-bottom:3px solid transparent;}
+.aw.bkt-letters{color:var(--bkt-letters); background:var(--bkt-letters-bg); border-bottom-color:var(--bkt-letters);}
+.aw.bkt-nikud{color:var(--bkt-nikud); background:var(--bkt-nikud-bg); border-bottom-color:var(--bkt-nikud);}
+.aw.bkt-rules{color:var(--bkt-rules); background:var(--bkt-rules-bg); border-bottom-color:var(--bkt-rules);}
+.aw.bkt-gen{color:var(--bkt-gen); background:var(--bkt-gen-bg); border-bottom-color:var(--bkt-gen);}
+.aw.playable{cursor:pointer;}
+.aw.playable::after{content:"🔊"; font-size:11px; margin-right:3px; opacity:.7;}
+.aw.beyond{opacity:.28;}
+.attnGrid{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin-top:10px;}
+.attnCard{background:#fff; border:1.5px solid var(--line); border-radius:12px; padding:12px 14px;}
+.attnCard .an{font-size:26px; font-weight:700;}
+.attnCard .al{font-size:12px; color:var(--grey); text-transform:uppercase; letter-spacing:.06em; margin-top:2px;}
+.attnCard .aw2{direction:rtl; font-family:'David Libre',serif; font-size:16px; margin-top:6px; line-height:1.6;}
+/* session notes tags */
+.tagGroupLabel{font-size:12.5px; font-weight:700; color:var(--grey); text-transform:uppercase; letter-spacing:.06em; margin-top:12px;}
+.tagRow{display:flex; flex-wrap:wrap; gap:8px; margin:6px 0 4px;}
+.tagChip{background:#fff; border:1.5px solid var(--line); border-radius:20px; padding:7px 14px; font-size:13px; font-weight:600; cursor:pointer; color:var(--ink); font-family:inherit;}
+.tagChip.on{background:var(--navy); color:#fff; border-color:var(--navy);}
+textarea{width:100%; padding:11px 12px; font-size:15px; border:1.5px solid var(--line); border-radius:8px; background:#fff; font-family:inherit; resize:vertical;}
+@media print{
+  header.app, .btn-ghost, .btn-primary, #recDot{display:none !important;}
+  .screen{display:none !important; max-width:none; padding:0;}
+  .screen.active{display:block !important;}
+  body{background:#fff;}
+}
+</style>
+</head>
+<body>
+<div id="recDot" style="display:none; position:fixed; top:12px; right:14px; z-index:99; background:#C0392B; color:#fff; font-weight:700; font-size:13px; padding:6px 12px; border-radius:20px; font-family:Assistant,sans-serif">● REC</div>
+<header class="app"><h1>Kriah Exam</h1><span class="band">Decoding and Fluency · Grades 2–8</span><span class="who" id="whoami"></span></header>
+
+<!-- ============ SIGN IN ============ -->
+<section class="screen active" id="scr-signin">
+  <h2 class="step">Sign in</h2>
+  <div class="notice" id="rosterStatus">Loading roster…</div>
+  <div class="notice">Sign in to give exams. Teachers see only their own sections; Admin/Proctor sees the full school.</div>
+  <button class="btn-primary" id="signinTeacherBtn">Sign in as Teacher →</button>
+  <button class="btn-primary" id="signinAdminBtn" style="background:var(--gold)">Sign in as Admin / Proctor →</button>
+</section>
+
+<!-- ============ SETUP ============ -->
+<section class="screen" id="scr-setup">
+  <h2 class="step">Student setup</h2>
+  <div class="notice" style="display:flex; align-items:center; gap:10px">
+    <span id="signedInAs" style="flex:1"></span>
+    <button class="btn-ghost" id="signOutBtn" style="padding:2px 4px">Sign out</button>
+  </div>
+  <div class="notice" id="setupNotice" style="display:none"></div>
+  <label>Assessment window</label>
+  <select id="windowSel"><option value="">Select window…</option><option>Fall</option><option>Winter</option><option>Spring</option></select>
+  <label>Grade</label>
+  <select id="gradeSel"><option value="">Select grade…</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select>
+  <label>Student</label>
+  <select id="studentSel"><option value="">Select student…</option></select>
+  <button class="btn-ghost" id="addToggle">+ Add a student not on the list</button>
+  <div id="addBox" style="display:none">
+    <label>New student name</label>
+    <input type="text" id="newName" placeholder="First Last">
+    <button class="btn-ghost" id="addBtn">Save to roster</button>
+    <span id="addMsg" style="font-size:13px;color:var(--grey)"></span>
+  </div>
+  <label>Examiner</label>
+  <input type="text" id="examiner" placeholder="Your name">
+  <label style="display:flex; gap:10px; align-items:center; margin-top:16px; cursor:pointer; font-weight:600">
+    <input type="checkbox" id="recChk" checked style="width:20px; height:20px; accent-color:#1F3864">
+    Record this session (verification audio)
+  </label>
+  <div id="recNote" style="font-size:12.5px; color:var(--grey); margin-top:2px">A red REC badge shows while recording. Students marked “No” in the roster’s Record column are never recorded.</div>
+  <button class="btn-primary" id="beginBtn" disabled>Begin Fluency Exam (timed, 3 parts)</button>
+  <button class="btn-primary" id="beginDiagBtn" disabled style="background:var(--gold)">Begin Decoding Diagnostic (A–L, untimed)</button>
+  <button class="btn-ghost" id="dashBtn">View Class Dashboard (admin) →</button>
+  <button class="btn-ghost" id="myClassBtn">My Class Dashboard →</button>
+  <button class="btn-ghost" id="anlBtn">View Analytics (admin) →</button>
+</section>
+
+<!-- ============ PART 1 ============ -->
+<section class="screen" id="scr-p1">
+  <div class="timerbar">
+    <svg class="ring" viewBox="0 0 64 64"><circle class="track" cx="32" cy="32" r="27"/><circle class="prog" cx="32" cy="32" r="27"/><text x="32" y="39" text-anchor="middle">60</text></svg>
+    <div class="tstate"><b>Part 1 · Word Reading</b><span id="p1msg">Tap Start, then have the student begin. Tap any syllable the student misreads.</span></div>
+    <button class="btn-stop" id="p1btn">Start</button>
+  </div>
+  <div class="grid" id="wordGrid"></div>
+  <button class="btn-primary" id="p1next" style="display:none">Continue to Passage A</button>
+  <button class="btn-ghost" id="p1skip">Skip this part (administer another day)</button>
+  <button class="btn-ghost exitBtn">✕ Exit to student setup (discard unsaved)</button>
+</section>
+
+<!-- ============ PART 2 ============ -->
+<section class="screen" id="scr-p2">
+  <div class="timerbar">
+    <svg class="ring" viewBox="0 0 64 64"><circle class="track" cx="32" cy="32" r="27"/><circle class="prog" cx="32" cy="32" r="27"/><text x="32" y="39" text-anchor="middle">60</text></svg>
+    <div class="tstate"><b>Part 2 · Passage A (familiar)</b><span id="p2msg">Tap Start, then have the student begin. Tap any word read incorrectly.</span></div>
+    <button class="btn-stop" id="p2btn">Start</button>
+  </div>
+  <div class="passage" id="pasA"></div>
+  <button class="btn-primary" id="p2next" style="display:none">Continue to Passage B</button>
+  <button class="btn-ghost" id="p2skip">Skip this part (administer another day)</button>
+  <button class="btn-ghost exitBtn">✕ Exit to student setup (discard unsaved)</button>
+</section>
+
+<!-- ============ PART 3 ============ -->
+<section class="screen" id="scr-p3">
+  <div class="timerbar">
+    <svg class="ring" viewBox="0 0 64 64"><circle class="track" cx="32" cy="32" r="27"/><circle class="prog" cx="32" cy="32" r="27"/><text x="32" y="39" text-anchor="middle">60</text></svg>
+    <div class="tstate"><b>Part 3 · Passage B (unfamiliar)</b><span id="p3msg">Tap Start, then have the student begin. Tap any word read incorrectly.</span></div>
+    <button class="btn-stop" id="p3btn">Start</button>
+  </div>
+  <div class="passage" id="pasB"></div>
+  <button class="btn-primary" id="p3next" style="display:none">See Results</button>
+  <button class="btn-ghost" id="p3skip">Skip this part (administer another day)</button>
+  <button class="btn-ghost exitBtn">✕ Exit to student setup (discard unsaved)</button>
+</section>
+
+<!-- ============ ANALYTICS ============ -->
+<section class="screen" id="scr-anl">
+  <h2 class="step">Analytics</h2>
+  <div class="anlfilters">
+    <select id="anlWin"><option value="">All windows</option><option>Fall</option><option>Winter</option><option>Spring</option></select>
+    <select id="anlGrade"><option value="">All grades</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select>
+  </div>
+  <div class="scorecards" id="anlCards"></div>
+  <h2 class="step">Benchmark bands</h2>
+  <div id="anlBands"></div>
+  <h2 class="step">Errors by skill level (totals)</h2>
+  <div id="anlErr"></div>
+  <div style="font-size:12.5px; color:var(--grey); margin-top:8px; line-height:1.6">A Letter &amp; vowel recognition &middot; B CV/CVC blends &middot; C CVCV blends &middot; D Cholom Vav &amp; Shuruk &middot; E Similar-looking letters &middot; F Sofiot (final letters) &middot; G Patach Genuva &middot; H Silent Hei &middot; I Sounded/Silent Yud &middot; J Double-duty Cholom &middot; K Articulated Vav &middot; L Shva Na/Nach &middot; Ch Chataf vowels &middot; Gen General (no specific skill)</div>
+  <div class="notice" id="anlNote" style="display:none"></div>
+  <button class="btn-ghost" id="anlBack">← Back to setup</button>
+</section>
+
+<!-- ============ CLASS DASHBOARD ============ -->
+<section class="screen" id="scr-dash">
+  <h2 class="step">Class Dashboard <span class="hint" id="dashWho"></span></h2>
+  <div class="notice">Tap a student's Fluency Exam or Decoding Diagnostic result to see the full score breakdown.</div>
+  <button class="btn-ghost" id="dashWorksheetBtn" style="margin:8px 0">Generate Grade Practice Sheet →</button>
+  <table class="skills" style="font-size:14px"><thead><tr>
+    <th style="text-align:left; padding-left:10px">Student</th><th id="thFlu">Fluency Exam</th><th>Decoding Diagnostic</th><th></th>
+  </tr></thead><tbody id="dashBody"></tbody></table>
+  <button class="btn-ghost" id="dashBack">← Back to setup</button>
+</section>
+
+<!-- ============ STUDENT RESULT DETAIL ============ -->
+<section class="screen" id="scr-studentres">
+  <h2 class="step">Student Results <span class="hint" id="srWho"></span></h2>
+  <div id="srBody"></div>
+  <button class="btn-ghost" id="srBack">← Back to dashboard</button>
+</section>
+
+<!-- ============ DIAGNOSTIC: LEVEL PICKER ============ -->
+<section class="screen" id="scr-levels">
+  <h2 class="step" id="levelsTitle"><span id="levelsTitleText">Decoding Diagnostic · choose a level</span> <span class="hint" id="diagWho"></span></h2>
+  <div class="notice">Untimed. Show each item; tap Correct or Incorrect (keyboard: C / X). Assess only the levels you need; then Finish and Save.</div>
+  <div class="lvlgrid" id="lvlGrid"></div>
+
+  <h2 class="step">Session Notes</h2>
+  <div class="tagGroupLabel">Reading style</div>
+  <div class="tagRow" id="diagRSRow"></div>
+  <div class="tagGroupLabel">Behavior during the assessment</div>
+  <div class="tagRow" id="diagBHRow"></div>
+  <label>Additional notes</label>
+  <textarea id="diagNotes" rows="2" placeholder="Optional notes…"></textarea>
+  <button class="btn-ghost" id="diagSaveNotes" style="margin-top:6px">Save notes</button>
+  <div class="saveline" id="diagNotesSaveline" style="display:none"></div>
+
+  <button class="btn-primary" id="diagFinish">Finish and Save Diagnostic</button>
+  <button class="btn-ghost exitBtn">✕ Exit to student setup without saving</button>
+  <div class="saveline" id="diagSaveline" style="display:none"></div>
+  <button class="btn-ghost" id="diagWorksheetBtn" style="display:none">Generate Practice Sheet →</button>
+  <button class="btn-ghost" id="diagAgain" style="display:none">Test another student</button>
+</section>
+
+<!-- ============ DIAGNOSTIC: ITEM ============ -->
+<section class="screen" id="scr-diag">
+  <h2 class="step" id="diagLvlTitle">Level A</h2>
+  <div class="diagbig" id="diagItem"></div>
+  <div class="diagmeta"><span id="diagLabel"></span><span id="diagProg"></span></div>
+  <div class="diagbtns">
+    <button class="btn-wrong" id="diagWrong">✗ Incorrect (X)</button>
+    <button class="btn-correct" id="diagRight">✓ Correct (C)</button>
+  </div>
+  <button class="btn-ghost" id="diagBack">← Back to levels (discard this level)</button>
+</section>
+
+<!-- ============ RESULTS ============ -->
+<section class="screen" id="scr-res">
+  <h2 class="step">Results <span class="hint" id="resWho"></span></h2>
+  <div class="scorecards" id="cards"></div>
+  <div class="gapflag" id="gapflag"></div>
+  <div class="gapflag" id="interp" style="display:none"></div>
+
+  <h2 class="step">Reading Passage — Annotated</h2>
+  <div class="wsLegend" id="annoLegend"></div>
+  <div id="annoBody"></div>
+  <div id="audioPlayers" style="display:none"></div>
+
+  <h2 class="step">Attention Areas <span class="hint">this session</span></h2>
+  <div class="attnGrid" id="attnBody"></div>
+
+  <h2 class="step">Session Notes</h2>
+  <div class="tagGroupLabel">Reading style</div>
+  <div class="tagRow" id="resRSRow"></div>
+  <div class="tagGroupLabel">Behavior during the assessment</div>
+  <div class="tagRow" id="resBHRow"></div>
+  <label>Additional notes</label>
+  <textarea id="resNotes" rows="2" placeholder="Optional notes…"></textarea>
+  <button class="btn-ghost" id="resSaveNotes" style="margin-top:6px">Save notes</button>
+  <div class="saveline" id="resNotesSaveline" style="display:none"></div>
+
+  <h2 class="step">Error analysis by skill level</h2>
+  <table class="skills"><thead><tr id="skHead"></tr></thead><tbody><tr id="skRow"></tr></tbody></table>
+  <div style="font-size:12.5px; color:var(--grey); margin-top:8px; line-height:1.6">A Letter &amp; vowel recognition &middot; B CV/CVC blends &middot; C CVCV blends &middot; D Cholom Vav &amp; Shuruk &middot; E Similar-looking letters &middot; F Sofiot (final letters) &middot; G Patach Genuva &middot; H Silent Hei &middot; I Sounded/Silent Yud &middot; J Double-duty Cholom &middot; K Articulated Vav &middot; L Shva Na/Nach &middot; Ch Chataf vowels &middot; Gen General (no specific skill)</div>
+  <div class="saveline" id="saveline">Saving to Google Sheet…</div>
+  <button class="btn-primary" id="copyBtn">Copy summary</button>
+  <button class="btn-ghost" id="wsFromResultsBtn">Generate Practice Sheet →</button>
+  <button class="btn-ghost" id="againBtn">Test another student</button>
+</section>
+
+<!-- ============ PRACTICE SHEET ============ -->
+<section class="screen" id="scr-worksheet">
+  <h2 class="step">Practice Sheet <span class="hint" id="wsWho"></span></h2>
+  <div id="wsBody"></div>
+  <button class="btn-primary" id="wsPrintBtn">Print / Save as PDF</button>
+  <button class="btn-ghost" id="wsBackBtn">← Back</button>
+</section>
+
+<script>
+/* ================================================================
+   CONFIG — paste your Google Apps Script Web App URL between quotes
+   ================================================================ */
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwt98ldDRwaD6YKAe8nGwINV-2fIiQKftMNtDPVacYl9wLG_yW6AVbcZe1762GGW5of/exec";
+
+/* ============ EXAM DATA (injected at build time) ============ */
+const BANKS = {
+  "35": { words: [{"segs":["שָׁ","לוֹם"],"skill":"C"},{"segs":["אוֹר"],"skill":"D"},{"segs":["דֶּ","רֶךְ"],"skill":"E"},{"segs":["מַ","יִם"],"skill":"F"},{"segs":["רוּ","חַ"],"skill":"G"},{"segs":["לַיְ","לָה"],"skill":"H"},{"segs":["מִצְ","וֹת"],"skill":"J"},{"segs":["שְׁ","מַע"],"skill":"L"},{"segs":["סֵ","פֶר"],"skill":"C"},{"segs":["בָּ","רוּךְ"],"skill":"D"},{"segs":["רֶ","גֶל"],"skill":"E"},{"segs":["אֶ","רֶץ"],"skill":"F"},{"segs":["מָ","שִׁי","חַ"],"skill":"G"},{"segs":["מִצְ","וָה"],"skill":"H"},{"segs":["עֲ","וֹ","נוֹת"],"skill":"J"},{"segs":["בְּ","רָ","כָה"],"skill":"L"},{"segs":["בֹּ","קֶר"],"skill":"C"},{"segs":["חוּ","מָשׁ"],"skill":"D"},{"segs":["חָ","תָן"],"skill":"E"},{"segs":["שֻׁלְ","חָן"],"skill":"F"},{"segs":["לִשְׁ","מֹ","עַ"],"skill":"G"},{"segs":["בַּ","יִת"],"skill":"I"},{"segs":["וַ","יֹּא","מֶר"],"skill":"K"},{"segs":["מִדְ","בָּר"],"skill":"L"},{"segs":["גָּ","מָל"],"skill":"C"},{"segs":["יוֹם"],"skill":"D"},{"segs":["כֶּ","לֶב"],"skill":"E"},{"segs":["גַּן"],"skill":"F"},{"segs":["תַּ","פּוּ","חַ"],"skill":"G"},{"segs":["יַ","יִן"],"skill":"I"},{"segs":["וְ","הָ","יָה"],"skill":"K"},{"segs":["תְּ","פִ","לָּה"],"skill":"L"},{"segs":["יָ","דַע"],"skill":"C"},{"segs":["סוּס"],"skill":"D"},{"segs":["בֵּי","צָה"],"skill":"E"},{"segs":["סוֹף"],"skill":"F"},{"segs":["שָׂ","מֵ","חַ"],"skill":"G"},{"segs":["עֵי","נַ","יִם"],"skill":"I"},{"segs":["וּ","בָ","נִים"],"skill":"K"},{"segs":["יִלְ","מְ","דוּ"],"skill":"L"},{"segs":["זָ","קֵן"],"skill":"C"},{"segs":["לִ","מּוּד"],"skill":"D"},{"segs":["נָ","גַע"],"skill":"E"},{"segs":["מֶ","לֶךְ"],"skill":"F"},{"segs":["גָּ","בוֹ","הַּ"],"skill":"G"},{"segs":["שָׁ","מַ","יִם"],"skill":"I"},{"segs":["וְ","אָ","הַבְ","תָּ"],"skill":"K"},{"segs":["יִשְׁ","מְ","רוּ"],"skill":"L"}], pasA: ["בַּבֹּקֶר קָם דָּוִד מִן הַמִּטָּה וְנוֹטֵל יָדַיִם.","הוּא אוֹמֵר מוֹדֶה אֲנִי בְּקוֹל שָׂמֵחַ.","אַחַר כָּךְ הוֹלֵךְ דָּוִד לְבֵית הַסֵּפֶר עִם אָחִיו הַקָּטָן.","בַּדֶּרֶךְ הֵם רוֹאִים אֶת הַשֶּׁמֶשׁ בַּשָּׁמַיִם.","בְּבֵית הַסֵּפֶר לוֹמְדִים הַיְלָדִים תּוֹרָה וּתְפִלָּה.","הַמּוֹרֶה אוֹמֵר שְׁמַע יִשְׂרָאֵל וְכָל הַיְלָדִים עוֹנִים יַחַד.","אַחַר הַלִּמּוּד אוֹכְלִים הַיְלָדִים לֶחֶם וְתַפּוּחַ בֶּחָצֵר.","דָּוִד אוֹהֵב אֶת הַתּוֹרָה וְאֶת כָּל הַמִּצְווֹת.","בָּעֶרֶב הוּא מִתְפַּלֵּל וְהוֹלֵךְ לִישֹׁן בְּשָׁלוֹם.","בַּשַּׁבָּת יוֹשֶׁבֶת כָּל הַמִּשְׁפָּחָה סְבִיב הַשֻּׁלְחָן.","אַבָּא עוֹשֶׂה קִדּוּשׁ עַל הַיַּיִן וְכֻלָּם שָׁרִים זְמִירוֹת.","אִמָּא מַדְלִיקָה נֵרוֹת וְהַבַּיִת מָלֵא אוֹר גָּדוֹל."], pasB: ["בַּחֹרֶף יוֹרֵד גֶּשֶׁם חָזָק עַל הֶהָרִים הַגְּבוֹהִים.","הָרוּחַ נוֹשֶׁבֶת בֵּין הָעֵצִים בַּיַּעַר הַיָּרֹק.","צִפּוֹר קְטַנָּה עָפָה מֵעַל הַנָּהָר וּמְחַפֶּשֶׂת מָקוֹם חַם.","הִיא מוֹצֵאת קֵן יָשָׁן תַּחַת הַגַּג שֶׁל בַּיִת לָבָן.","בַּלַּיְלָה שׁוֹמַעַת הַצִּפּוֹר קוֹל רַעַם גָּדוֹל בַּשָּׁמַיִם.","בַּבֹּקֶר זוֹרַחַת הַשֶּׁמֶשׁ וְהַשֶּׁלֶג נָמֵס עַל הַשָּׂדֶה.","הַצִּפּוֹר שָׁרָה שִׁיר שָׂמֵחַ וְעָפָה לְדַרְכָּהּ.","יְלָדִים יוֹצְאִים מִן הַבַּיִת וּמְשַׂחֲקִים בַּחוּץ.","בָּאָבִיב פּוֹרְחִים פְּרָחִים יָפִים בְּכָל הַגִּנָּה.","הַיְלָדִים קוֹטְפִים תַּפּוּחִים מִן הָעֵץ הַגָּדוֹל.","בָּעֶרֶב חוֹזְרִים כֻּלָּם הַבַּיְתָה שְׂמֵחִים וַעֲיֵפִים.","הַשָּׁמַיִם מְלֵאִים כּוֹכָבִים קְטַנִּים וּמְאִירִים."], p1label: "Word Reading" },
+  "68": { words: [{"segs":["וַיְ","דַ","בֵּר"],"skill":"K·L"},{"segs":["יְ","רוּ","שָׁ","לַ","יִם"],"skill":"I·L"},{"segs":["הָ","רָ","קִי","עַ"],"skill":"G"},{"segs":["וַ","יִּשְׁ","מַע"],"skill":"K"},{"segs":["בְּ","שִׁבְ","תְּ","ךָ"],"skill":"L"},{"segs":["לִקְ","רַאת"],"skill":"L"},{"segs":["בְּ","רֵא","שִׁית"],"skill":"L"},{"segs":["מַלְ","כוּתְ","ךָ"],"skill":"L"},{"segs":["לְ","הוֹ","דִי","עַ"],"skill":"G"},{"segs":["מִשְׁ","פָּ","טִים"],"skill":"F·L"},{"segs":["וּ","בְ","לֶכְ","תְּ","ךָ"],"skill":"K·L"},{"segs":["מִצְ","רַיְ","מָה"],"skill":"I·H"},{"segs":["מִזְ","בֵּ","חַ"],"skill":"G"},{"segs":["לְ","עוֹ","לָם"],"skill":"L"},{"segs":["חֲ","מִ","שָּׁה"],"skill":"Ch"},{"segs":["וּ","לְ","בָ","נָיו"],"skill":"K"},{"segs":["נַפְ","שְׁ","ךָ"],"skill":"L"},{"segs":["וְ","הִתְ","פַּ","לְּ","לוּ"],"skill":"K·L"},{"segs":["מִשְׁ","פָּ","חָה"],"skill":"L"},{"segs":["וָ","עֶד"],"skill":"K"},{"segs":["אֲ","דָ","מָה"],"skill":"Ch"},{"segs":["מְ","זוּ","זוֹת"],"skill":"L"},{"segs":["מְ","אֹ","דֶ","ךָ"],"skill":"L"},{"segs":["תּוֹ","לְ","דוֹת"],"skill":"L"},{"segs":["תַּלְ","מִי","דִים"],"skill":"F"},{"segs":["תִּשְׁ","מְ","עוּ"],"skill":"L"},{"segs":["וְ","נֶ","אֱ","מָן"],"skill":"Ch·K"},{"segs":["שְׁ","עָ","רֶי","ךָ"],"skill":"L"},{"segs":["הַ","מַּ","חֲ","נֶה"],"skill":"Ch·H"},{"segs":["וּבְ","קוּ","מֶ","ךָ"],"skill":"K·D"},{"segs":["וּ","שְׁ","מַרְ","תֶּם"],"skill":"K·L"},{"segs":["בְּ","מִדְ","בַּר"],"skill":"L"},{"segs":["עֲ","בוֹ","דָה"],"skill":"Ch"},{"segs":["וְ","דִ","בַּרְ","תָּ"],"skill":"K"},{"segs":["וַ","יַּ","עֲ","מֹד"],"skill":"K·Ch"},{"segs":["לְ","דֹ","רֹ","תָם"],"skill":"J·L"}], pasA: ["כָּל בֹּקֶר מִתְפַּלְּלִים הַתַּלְמִידִים בְּבֵית הַמִּדְרָשׁ בְּכַוָּנָה גְּדוֹלָה.","הֵם מוֹדִים לַמֶּלֶךְ הַקָּדוֹשׁ אֲשֶׁר בָּרָא שָׁמַיִם וָאָרֶץ בְּשִׁשָּׁה יָמִים.","אַחֲרֵי הַתְּפִלָּה לוֹמְדִים הֵם תּוֹרָה וּמִשְׁנָה עִם רַבּוֹתֵיהֶם הַנֶּאֱמָנִים.","הָרַב מְלַמֵּד אוֹתָם כִּי הָעוֹלָם עוֹמֵד עַל שְׁלֹשָׁה דְּבָרִים.","עַל הַתּוֹרָה וְעַל הָעֲבוֹדָה וְעַל גְּמִילוּת חֲסָדִים לְכָל אָדָם.","הַתַּלְמִידִים שׁוֹמְעִים אֶת הַדְּבָרִים הַקְּדוֹשִׁים וְשׁוֹמְרִים אוֹתָם בְּלִבָּם.","בְּכָל דּוֹר וָדוֹר עוֹבְרוֹת הַמִּצְווֹת מֵאָבוֹת לְבָנִים בְּאַהֲבָה רַבָּה.","וְכַאֲשֶׁר מַגִּיעַ יוֹם הַשַּׁבָּת שׁוֹבְתִים כֻּלָּם מִכָּל מְלַאכְתָּם.","הֵם מְקַדְּשִׁים עַל הַיַּיִן וּמְבָרְכִים אֶת בִּרְכַּת הַמָּזוֹן בְּשִׂמְחָה.","בְּמוֹצָאֵי שַׁבָּת מַבְדִּילִים הֵם בֵּין קֹדֶשׁ לְחֹל לְאוֹר הַנֵּר.","וּבְנֵיהֶם אַחֲרֵיהֶם יִלְמְדוּ וְיִשְׁמְרוּ אֶת כָּל דִּבְרֵי הַתּוֹרָה הַזֹּאת.","אַשְׁרֵי הָעָם הַשּׁוֹמֵר אֶת דַּרְכֵי הַתּוֹרָה לְעוֹלָם וָעֶד."], pasB: ["וַיְהִי בַּשָּׁנָה הַהִיא וַיֵּלְכוּ הָאֲנָשִׁים מִן הַמִּדְבָּר אֶל הֶעָרִים.","וַיַּעַמְדוּ עַל יַד הַנָּהָר הַגָּדוֹל וַיִּרְאוּ אֶת הָרָקִיעַ מֵעַל הֶהָרִים.","וַיִּקְרְאוּ בְּקוֹל גָּדוֹל אֶל כָּל יוֹשְׁבֵי הָאָרֶץ לִשְׁמֹעַ אֶת דִּבְרֵיהֶם.","וְהָאֲדָמָה נָתְנָה אֶת פִּרְיָהּ וְהָעֵצִים נָשְׂאוּ פְּרִי לָרֹב בְּכָל הַשָּׂדוֹת.","וַיַּעַבְדוּ הָאֲנָשִׁים אֶת עֲבוֹדָתָם בֶּאֱמוּנָה וּבְשִׂמְחָה גְּדוֹלָה כָּל הַיָּמִים.","וּבָעֶרֶב יָשְׁבוּ תַּחַת הָעֵצִים וַיְסַפְּרוּ אִישׁ לְרֵעֵהוּ עַל מַעֲשֵׂיהֶם.","וְהַיְלָדִים שָׁמְעוּ וְשָׁמְרוּ אֶת הַדְּבָרִים בְּלִבָּם לְדוֹרוֹת עוֹלָם.","וַיְבָרְכוּ אֶת שֵׁם הַמֶּלֶךְ אֲשֶׁר נָתַן לָהֶם אֶת כָּל הַטּוֹב הַזֶּה.","וּבַבֹּקֶר הִשְׁכִּימוּ וַיֵּצְאוּ אֶל הַשָּׂדֶה לַעֲבֹד אֶת הָאֲדָמָה.","וְכֹה עָשׂוּ שָׁנָה בְּשָׁנָה וְלֹא שָׁכְחוּ אֵת אֲשֶׁר לָמְדוּ מֵאֲבוֹתֵיהֶם.","וַיִּבְנוּ לָהֶם בָּתִּים חֲדָשִׁים וַיִּטְּעוּ כְּרָמִים עַל צַלְעֵי הֶהָרִים.","וַתְּהִי שִׂמְחָה גְּדוֹלָה בְּכָל הָאָרֶץ כִּי רָאוּ בְּרָכָה בַּעֲמָלָם.","וְגַם בְּנֵיהֶם אַחֲרֵיהֶם שָׁמְרוּ אֶת הַדֶּרֶךְ הַטּוֹבָה הַזֹּאת."], p1label: "Word Screener" }
+};
+let BANK = BANKS["35"];
+
+/* provisional Emek benchmarks, grades 3–5 */
+const BENCH = {
+  cspm:{3:[55,35],4:[70,45],5:[85,55],6:[90,60],7:[100,68],8:[110,75]},
+  wcpm:{3:[35,22],4:[45,30],5:[55,38],6:[60,40],7:[70,48],8:[80,55]},
+  acc:[97,93]
+};
+const SKILLS = ["C","D","E","F","G","H","I","J","K","L","Ch","Gen"];
+function tagWord(w){
+  if(/[חהע]ַ\u05BC?$/.test(w) || /הַּ$/.test(w)) return "G";        // patach genuva
+  if(/[\u05B1\u05B2\u05B3]/.test(w)) return "Ch";                    // chataf vowels
+  if(/^ו[\u05B0\u05B7\u05B8\u05BC]/.test(w)) return "K";              // vav prefix
+  if(/\u05B0/.test(w)) return "L";                                   // shva
+  if(/וֹ/.test(w) || /וּ/.test(w)) return "D";                       // cholom malei / shuruk
+  if(/ה$/.test(w)) return "H";                                       // silent hei
+  if(/[ןםךףץ]/.test(w)) return "F";                                  // sofiot
+  return "Gen";
+}
+
+/* ============ STATE ============ */
+const S = { name:"", grade:"", window:"", examiner:"", parts:{} };
+let roster = [], doneMap = {}, diagMap = {}, flagsMap = {};
+let currentRole = null, scopeRoster = null;
+
+/* ============ SETUP SCREEN ============ */
+const $ = id => document.getElementById(id);
+function show(id){ document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active")); $(id).classList.add("active"); window.scrollTo(0,0); }
+
+/* ============ SESSION NOTES (reading style / behavior tags) ============ */
+const TAGS = {
+  readingStyle: ["Fluent","Choppy","Hesitant","Slow","Skip & Guess","Strong reader","Reading from memory","Rushing through"],
+  behavior: ["On task","Distracted","Anxious","Rushing","Needed encouragement","Fidgety","Reluctant / avoidant","Overconfident","Frustrated","Engaged / cooperative"]
+};
+function renderTagRow(rowId, tags){
+  $(rowId).innerHTML = tags.map(t=>`<button type="button" class="tagChip" data-tag="${t}">${t}</button>`).join("");
+}
+function initTagRow(rowId){
+  $(rowId).addEventListener("click", e=>{
+    const b = e.target.closest(".tagChip"); if(!b) return;
+    b.classList.toggle("on");
+  });
+}
+function getSelectedTags(rowId){
+  return [...$(rowId).querySelectorAll(".tagChip.on")].map(b=>b.dataset.tag);
+}
+function resetTagPanel(prefix){
+  renderTagRow(prefix+"RSRow", TAGS.readingStyle);
+  renderTagRow(prefix+"BHRow", TAGS.behavior);
+  $(prefix+"Notes").value = "";
+  const sl = $(prefix+"NotesSaveline"); sl.style.display = "none"; sl.textContent = "";
+}
+async function saveNotesFor(prefix){
+  const readingStyle = getSelectedTags(prefix+"RSRow");
+  const behavior = getSelectedTags(prefix+"BHRow");
+  const notes = $(prefix+"Notes").value.trim();
+  if(S.result){ S.result.readingStyle = readingStyle; S.result.behavior = behavior; S.result.notes = notes; }
+  const sl = $(prefix+"NotesSaveline");
+  sl.style.display = "block";
+  if(SCRIPT_URL.startsWith("PASTE")){ sl.textContent = "Not connected to a Sheet. Notes shown here only, not saved."; sl.className = "saveline fail"; return; }
+  try{
+    await fetch(SCRIPT_URL, {method:"POST", headers:{"Content-Type":"text/plain"}, body:JSON.stringify({
+      action:"notes", name:S.name, grade:S.grade, window:S.window, timestamp:new Date().toISOString(),
+      readingStyle, behavior, notes
+    })});
+    sl.textContent = "Notes saved ✓"; sl.className = "saveline ok";
+  }catch(e){ sl.textContent = "Could not save notes (no connection)."; sl.className = "saveline fail"; }
+}
+initTagRow("resRSRow"); initTagRow("resBHRow");
+initTagRow("diagRSRow"); initTagRow("diagBHRow");
+$("resSaveNotes").addEventListener("click", ()=>saveNotesFor("res"));
+$("diagSaveNotes").addEventListener("click", ()=>saveNotesFor("diag"));
+
+/* ============ PRACTICE SHEET GENERATOR ============ */
+const SKILL_DESC = {A:"Letter & vowel recognition", B:"CV / CVC blends", C:"CVCV blends", D:"Cholom Vav & Shuruk",
+  E:"Similar-looking letters", F:"Sofiot (final letters)", G:"Patach Genuva", H:"Silent Hei",
+  I:"Sounded / Silent Yud", J:"Double-duty Cholom", K:"Articulated Vav", L:"Shva Na / Nach",
+  Ch:"Chataf vowels", Gen:"General (no specific skill)"};
+const BUCKET = {A:"letters", B:"letters", C:"letters", E:"letters", F:"letters",
+  D:"nikud", I:"nikud", J:"nikud", Ch:"nikud",
+  G:"rules", H:"rules", K:"rules", L:"rules", Gen:"gen"};
+const BUCKET_LABEL = {letters:"Letters", nikud:"Nikudos", rules:"Rules & Dagesh", gen:"General"};
+function bucketOf(skill){ return BUCKET[skill] || "gen"; }
+function renderLegend(){
+  return ["letters","nikud","rules"].map(b=>
+    `<span class="legchip"><span class="dot" style="background:var(--bkt-${b})"></span>${BUCKET_LABEL[b]}</span>`).join("") +
+    `<span class="legchip" style="color:var(--grey)">🔊 tap a highlighted word to hear it</span>`;
+}
+function renderAnnoBlock(labelText, items, audioKey){
+  const hasAudio = !!REC.localBlobs[audioKey];
+  const html = items.map(it=>{
+    const cls = ["aw"];
+    if(it.err) cls.push("bkt-"+bucketOf(it.skill));
+    if(!it.read) cls.push("beyond");
+    const canPlay = it.err && hasAudio && it.t!=null;
+    if(canPlay) cls.push("playable");
+    const attrs = canPlay ? ` data-audio="${audioKey}" data-t="${it.t}"` : "";
+    return `<span class="${cls.join(" ")}"${attrs}>${it.text}</span>`;
+  }).join(" ");
+  return `<div class="annoBlock"><div class="annoLabel">${labelText}</div><div class="annoPassage">${html}</div></div>`;
+}
+function attnBuckets(tally){
+  const sums = {letters:0, nikud:0, rules:0};
+  Object.entries(tally||{}).forEach(([k,v])=>{ const b=bucketOf(k); if(sums[b]!=null) sums[b]+=v; });
+  return sums;
+}
+function renderAttentionAreas(tally, missedWords){
+  const b = attnBuckets(tally);
+  return ["letters","nikud","rules"].map(k=>
+    `<div class="attnCard"><div class="an" style="color:var(--bkt-${k})">${b[k]}</div><div class="al">${BUCKET_LABEL[k]}</div></div>`).join("") +
+    `<div class="attnCard"><div class="an">${(missedWords||[]).length}</div><div class="al">Missed words</div>
+      <div class="aw2">${(missedWords||[]).join(" ") || "—"}</div></div>`;
+}
+function practiceItemsFor(code, n){
+  const lvl = LEVELS.find(l=>l.id===code);
+  if(!lvl) return [];
+  return lvl.items.slice(0, n||8);
+}
+function renderWorksheetHTML(title, subtitle, skillCounts, missedWords, missedByLevel){
+  const sorted = Object.entries(skillCounts||{}).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+  let body = "";
+  if(sorted.length){
+    body += sorted.map(([code,count])=>{
+      const items = practiceItemsFor(code, 8);
+      if(!items.length) return "";
+      return `<div class="wsSkill"><div class="wsSkillHead">${SKILL_DESC[code]||code} <span class="wsCount">(${count} miss${count===1?"":"es"})</span></div>
+        <div class="wsItems">${items.map(it=>`<span class="wsItem">${it}</span>`).join("")}</div></div>`;
+    }).join("");
+  }
+  if(missedWords && missedWords.length){
+    body += `<div class="wsSkill"><div class="wsSkillHead">Exact words missed this session</div>
+      <div class="wsItems">${missedWords.map(w=>`<span class="wsItem">${w}</span>`).join("")}</div></div>`;
+  }
+  if(missedByLevel && missedByLevel.length){
+    body += missedByLevel.map(lv=>`<div class="wsSkill"><div class="wsSkillHead">Level ${lv.id} · ${lv.desc}</div>
+      <div class="wsItems">${lv.missed.map(w=>`<span class="wsItem">${w}</span>`).join("")}</div></div>`).join("");
+  }
+  if(!body) body = "<p style='color:var(--grey)'>No specific skill pattern flagged. General re-read practice recommended.</p>";
+  return `<div class="wsHeader"><div class="wsSchool">Emek Hebrew Academy · Torah Studies</div>
+    <div class="wsTitle">${title}</div><div class="wsSub">${subtitle}</div></div>${body}
+    <div class="wsSign">Rabbi Levi Solomon, Principal of Torah Studies</div>`;
+}
+let wsReturnTo = "scr-setup";
+function openWorksheet(who, title, subtitle, skillCounts, missedWords, missedByLevel, returnTo){
+  wsReturnTo = returnTo || "scr-setup";
+  $("wsWho").textContent = who;
+  $("wsBody").innerHTML = renderWorksheetHTML(title, subtitle, skillCounts, missedWords, missedByLevel);
+  show("scr-worksheet");
+}
+$("wsPrintBtn").addEventListener("click", ()=>window.print());
+$("wsBackBtn").addEventListener("click", ()=>show(wsReturnTo));
+
+async function loadRoster(){
+  if(SCRIPT_URL.startsWith("PASTE")){ $("rosterStatus").textContent = "No Sheet connected yet."; return; }
+  try{
+    const r = await fetch(SCRIPT_URL + "?action=roster");
+    const j = await r.json();
+    roster = j.roster || [];
+    (j.done || []).forEach(d => {
+      doneMap[d.name + "|" + d.window] = d.parts;
+      if(d.flags && d.flags.length) flagsMap[d.name + "|" + d.window] = d.flags;
+    });
+    $("rosterStatus").textContent = "Roster loaded: " + roster.filter(s=>s.active).length + " active students. Sign in to begin.";
+  }catch(e){
+    $("rosterStatus").textContent = "Could not reach the Sheet (offline?). Sign-in requires a connection.";
+    $("rosterStatus").classList.add("err");
+  }
+}
+function fillStudents(){
+  const g = $("gradeSel").value, w = $("windowSel").value;
+  const source = scopeRoster || [];
+  const opts = source.filter(s=>s.active && String(s.grade)===g).map(s=>{
+    const parts = doneMap[s.name + "|" + w];
+    const tag = !parts ? "" : parts === "1+A+B" ? "  ✓ done" : `  ✓ partial (${parts})`;
+    return `<option value="${s.name}">${s.name}${tag}</option>`;
+  }).join("");
+  $("studentSel").innerHTML = "<option value=''>Select student…</option>" + opts;
+  updateGradeUI();
+  checkReady();
+}
+function updateGradeUI(){
+  const isG2 = $("gradeSel").value === "2";
+  $("beginBtn").style.display = isG2 ? "none" : "block";
+  $("beginDiagBtn").textContent = isG2 ? "Begin Kriah Assessment (untimed)" : "Begin Decoding Diagnostic (A–L, untimed)";
+}
+$("gradeSel").addEventListener("change", fillStudents);
+$("windowSel").addEventListener("change", fillStudents);
+$("studentSel").addEventListener("change", checkReady);
+$("addToggle").addEventListener("click", ()=>{ $("addBox").style.display="block"; $("addToggle").style.display="none"; });
+$("addBtn").addEventListener("click", async ()=>{
+  const name = $("newName").value.trim(), g = $("gradeSel").value;
+  if(!name || !g){ $("addMsg").textContent = "Pick a grade and type a name first."; return; }
+  $("addMsg").textContent = "Saving…";
+  const section = (currentRole === "teacher" && teacherSections && teacherSections.length) ? teacherSections[0] : "";
+  try{
+    await fetch(SCRIPT_URL, {method:"POST", headers:{"Content-Type":"text/plain"}, body:JSON.stringify({action:"addStudent", name, grade:g, teacher:section})});
+    const entry = {name, grade:g, active:true, record:true};
+    roster.push(entry);
+    if(scopeRoster) scopeRoster.push(entry);
+    fillStudents(); $("studentSel").value = name;
+    $("addMsg").textContent = section ? `Added ✓ (section ${section})` : "Added ✓";
+    checkReady();
+  }catch(e){ $("addMsg").textContent = "Could not save. Check connection."; }
+});
+function checkReady(){
+  const name = $("studentSel").value || $("newName").value.trim();
+  $("beginBtn").disabled = !(name && $("gradeSel").value && $("windowSel").value);
+}
+$("beginBtn").addEventListener("click", ()=>{
+  S.name = $("studentSel").value || $("newName").value.trim();
+  S.grade = $("gradeSel").value; S.window = $("windowSel").value; S.examiner = $("examiner").value.trim();
+  const rentry = roster.find(x => x.name === S.name);
+  S.record = rentry ? rentry.record !== false : true;
+  if(S.record === false){ $("recChk").checked = false; }
+  $("whoami").textContent = S.name + " · Gr " + S.grade + " · " + S.window;
+  BANK = +S.grade <= 5 ? BANKS["35"] : BANKS["68"];
+  document.querySelector("#scr-p1 .tstate b").textContent = "Part 1 · " + BANK.p1label;
+  buildP1(); show("scr-p1");
+});
+
+/* ============ RECORDING (verification audio) ============ */
+const REC = {
+  stream: null, rec: null, chunks: [], key: null, uploads: {}, localBlobs: {}, startedAt: {}, pending: [],
+  supported(){ return !!(navigator.mediaDevices && window.MediaRecorder); },
+  active(){ return $("recChk").checked && S.record !== false && this.supported(); },
+  async start(key){
+    if(!this.active()) return;
+    try{
+      if(!this.stream) this.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      this.chunks = []; this.key = key;
+      this.rec = new MediaRecorder(this.stream);
+      this.rec.ondataavailable = e => this.chunks.push(e.data);
+      this.rec.onstart = () => { REC.startedAt[key] = Date.now(); };
+      this.rec.start();
+      document.getElementById("recDot").style.display = "block";
+    }catch(e){
+      $("recChk").checked = false;
+      $("recNote").textContent = "Microphone unavailable or denied on this device — continuing without recording.";
+    }
+  },
+  /* seconds since the microphone itself actually started, not since the on-screen timer started.
+     Falls back to null if recording hasn't truly started yet for this key. */
+  elapsedSince(key){
+    const t = this.startedAt[key];
+    return t ? (Date.now() - t) / 1000 : null;
+  },
+  stop(){
+    document.getElementById("recDot").style.display = "none";
+    if(!this.rec || this.rec.state !== "recording") return;
+    const key = this.key, rec = this.rec;
+    const p = new Promise(res => {
+      rec.onstop = async () => {
+        try{
+          const blob = new Blob(REC.chunks, { type: "audio/webm" });
+          REC.localBlobs[key] = URL.createObjectURL(blob);
+          if(!SCRIPT_URL.startsWith("PASTE")){
+            const b64 = await new Promise((r2, j2) => { const fr = new FileReader(); fr.onload = () => r2(fr.result.split(",")[1]); fr.onerror = j2; fr.readAsDataURL(blob); });
+            const resp = await fetch(SCRIPT_URL, { method: "POST", headers: { "Content-Type": "text/plain" },
+              body: JSON.stringify({ action: "audio", name: S.name, window: S.window, part: key, mime: "audio/webm", data: b64 }) });
+            const j = await resp.json();
+            REC.uploads[key] = j.url || "";
+          }
+        }catch(e){ REC.uploads[key] = ""; }
+        res();
+      };
+    });
+    this.pending.push(p);
+    rec.stop();
+  }
+};
+
+/* ============ TIMED PROBE ENGINE ============ */
+function makeProbe(prefix, container, onDone, recKey){
+  const scr = $("scr-"+prefix);
+  const svg = scr.querySelector(".ring"), prog = svg.querySelector(".prog"), txt = svg.querySelector("text");
+  const CIRC = 2*Math.PI*27; prog.style.strokeDasharray = CIRC; prog.style.strokeDashoffset = 0;
+  const btn = $(prefix+"btn"), msg = $(prefix+"msg"), next = $(prefix+"next");
+  let t0=null, timer=null, elapsed=60, phase="idle"; // idle→running→picklast→done
+  function tick(){
+    const el = (Date.now()-t0)/1000, left = Math.max(0, 60-el);
+    txt.textContent = Math.ceil(left);
+    prog.style.strokeDashoffset = CIRC*(el/60);
+    if(left<=10) svg.classList.add("warn");
+    if(left<=0){ stop(60); }
+  }
+  function stop(el){
+    clearInterval(timer); elapsed = Math.min(60, el);
+    REC.stop();
+    phase = "picklast";
+    container.classList.add("pick-last");
+    msg.innerHTML = "<b style='color:var(--err)'>Time!</b> Now tap the LAST item the student read.";
+    btn.style.display = "none";
+  }
+  btn.addEventListener("click", ()=>{
+    if(phase==="idle"){ phase="running"; t0=Date.now(); timer=setInterval(tick,200); btn.textContent="Student finished page"; msg.textContent="Timer running. Tap errors as you hear them."; REC.start(recKey); }
+    else if(phase==="running"){ stop((Date.now()-t0)/1000); }
+  });
+  return {
+    getPhase:()=>phase,
+    getElapsed:()=>t0 ? (Date.now()-t0)/1000 : 0,
+    finishPick(lastIdx){
+      phase="done"; container.classList.remove("pick-last");
+      msg.textContent = "Done. Review taps if needed, then continue.";
+      next.style.display = "block";
+      onDone(lastIdx, elapsed);
+    }
+  };
+}
+
+/* ============ PART 1: WORD LIST ============ */
+let p1;
+function buildP1(){
+  const grid = $("wordGrid"); grid.innerHTML = "";
+  let segIdx = 0;
+  const errTimes = {};
+  BANK.words.forEach((w,wi)=>{
+    const d = document.createElement("div"); d.className = "word";
+    w.segs.forEach((sg,si)=>{
+      const sp = document.createElement("span"); sp.className = "seg";
+      sp.textContent = sg; sp.dataset.g = segIdx; sp.dataset.w = wi; sp.dataset.skill = w.skill;
+      d.appendChild(sp); segIdx++;
+    });
+    grid.appendChild(d);
+  });
+  p1 = makeProbe("p1", grid, (lastIdx, elapsed)=>{
+    const segs = [...grid.querySelectorAll(".seg")];
+    segs.forEach(s=>{ if(+s.dataset.g > lastIdx) s.classList.add("beyond"); });
+    const read = segs.filter(s=>+s.dataset.g <= lastIdx);
+    const errs = read.filter(s=>s.classList.contains("err"));
+    const tally = {}; errs.forEach(s=>{ (s.dataset.skill||"Gen").split("·").forEach(k=>tally[k]=(tally[k]||0)+1); });
+    const missedWords = [...new Set(errs.map(s=>s.textContent))];
+    const allItems = segs.map(s=>({ g:+s.dataset.g, text:s.textContent, skill:(s.dataset.skill||"Gen").split("·")[0], err:s.classList.contains("err"), read:+s.dataset.g<=lastIdx, t:errTimes[s.dataset.g] }));
+    S.parts.p1 = { read:read.length, errors:errs.length, elapsed, cspm:Math.round((read.length-errs.length)/elapsed*60), acc:read.length? Math.round((read.length-errs.length)/read.length*1000)/10 : 0, tally, missedWords, allItems };
+  }, "p1");
+  grid.addEventListener("click", e=>{
+    const sp = e.target.closest(".seg"); if(!sp) return;
+    if(p1.getPhase()==="picklast"){ grid.querySelectorAll(".lastmark").forEach(x=>x.classList.remove("lastmark")); sp.classList.add("lastmark"); p1.finishPick(+sp.dataset.g); }
+    else if(p1.getPhase()==="running"){
+      sp.classList.toggle("err");
+      if(sp.classList.contains("err")) errTimes[sp.dataset.g] = REC.elapsedSince("p1") ?? p1.getElapsed();
+      else delete errTimes[sp.dataset.g];
+    }
+  });
+}
+$("p1next").addEventListener("click", ()=>{ buildPassage("pasA", BANK.pasA, "p2", "pA"); show("scr-p2"); });
+$("p1skip").addEventListener("click", ()=>{ S.parts.p1 = null; buildPassage("pasA", BANK.pasA, "p2", "pA"); show("scr-p2"); });
+
+/* ============ PASSAGES ============ */
+const probes = {};
+function buildPassage(elId, lines, prefix, key){
+  const box = $(elId); box.innerHTML = "";
+  let idx = 0;
+  const errTimes = {};
+  lines.forEach(line=>{
+    line.trim().split(/\s+/).forEach(w=>{
+      const sp = document.createElement("span"); sp.className = "pw";
+      sp.textContent = w; sp.dataset.g = idx; sp.dataset.skill = tagWord(w);
+      box.appendChild(sp); box.appendChild(document.createTextNode(" "));
+      idx++;
+    });
+  });
+  probes[key] = makeProbe(prefix, box, (lastIdx, elapsed)=>{
+    const ws = [...box.querySelectorAll(".pw")];
+    ws.forEach(s=>{ if(+s.dataset.g > lastIdx) s.classList.add("beyond"); });
+    const read = ws.filter(s=>+s.dataset.g <= lastIdx);
+    const errs = read.filter(s=>s.classList.contains("err"));
+    const tally = {}; errs.forEach(s=>{ tally[s.dataset.skill]=(tally[s.dataset.skill]||0)+1; });
+    const missedWords = [...new Set(errs.map(s=>s.textContent))];
+    const allItems = ws.map(s=>({ g:+s.dataset.g, text:s.textContent, skill:s.dataset.skill, err:s.classList.contains("err"), read:+s.dataset.g<=lastIdx, t:errTimes[s.dataset.g] }));
+    S.parts[key] = { read:read.length, errors:errs.length, elapsed, wcpm:Math.round((read.length-errs.length)/elapsed*60), acc:read.length? Math.round((read.length-errs.length)/read.length*1000)/10 : 0, tally, missedWords, allItems };
+  }, key);
+  box.addEventListener("click", e=>{
+    const sp = e.target.closest(".pw"); if(!sp) return;
+    const pr = probes[key];
+    if(pr.getPhase()==="picklast"){ box.querySelectorAll(".lastmark").forEach(x=>x.classList.remove("lastmark")); sp.classList.add("lastmark"); pr.finishPick(+sp.dataset.g); }
+    else if(pr.getPhase()==="running"){
+      sp.classList.toggle("err");
+      if(sp.classList.contains("err")) errTimes[sp.dataset.g] = REC.elapsedSince(key) ?? pr.getElapsed();
+      else delete errTimes[sp.dataset.g];
+    }
+  });
+}
+$("p2next").addEventListener("click", ()=>{ buildPassage("pasB", BANK.pasB, "p3", "pB"); show("scr-p3"); });
+$("p2skip").addEventListener("click", ()=>{ S.parts.pA = null; buildPassage("pasB", BANK.pasB, "p3", "pB"); show("scr-p3"); });
+$("p3next").addEventListener("click", showResults);
+$("p3skip").addEventListener("click", ()=>{ S.parts.pB = null; showResults(); });
+
+/* ============ RESULTS ============ */
+function bandOf(val, pair){ return val>=pair[0] ? ["Benchmark","b-bench"] : val>=pair[1] ? ["Strategic","b-strat"] : ["Intensive","b-int"]; }
+function accBand(a){ return a>=BENCH.acc[0]?["Benchmark","b-bench"]:a>=BENCH.acc[1]?["Strategic","b-strat"]:["Intensive","b-int"]; }
+
+async function showResults(){
+  if(REC.pending.length){
+    await Promise.race([Promise.all(REC.pending), new Promise(r=>setTimeout(r, 12000))]);
+  }
+  const g = S.grade, p1r = S.parts.p1 || null, A = S.parts.pA || null, B = S.parts.pB || null;
+  const partsStr = [p1r?"1":null, A?"A":null, B?"B":null].filter(Boolean).join("+") || "none";
+  $("resWho").textContent = S.name + " · Grade " + g + " · " + S.window + " · " + new Date().toLocaleDateString();
+  let cards = "", bands = [], accs = [];
+  const c1 = p1r ? bandOf(p1r.cspm, BENCH.cspm[g]) : null;
+  const cA = A ? bandOf(A.wcpm, BENCH.wcpm[g]) : null;
+  const cB = B ? bandOf(B.wcpm, BENCH.wcpm[g]) : null;
+  if(p1r){ cards += `<div class="card"><div class="n">${p1r.cspm}</div><div class="l">CSPM · word list</div><span class="band-tag ${c1[1]}">${c1[0]}</span></div>`; bands.push(c1[0]); accs.push(p1r.acc); }
+  if(A){ cards += `<div class="card"><div class="n">${A.wcpm}</div><div class="l">WCPM · familiar</div><span class="band-tag ${cA[1]}">${cA[0]}</span></div>`; bands.push(cA[0]); accs.push(A.acc); }
+  if(B){ cards += `<div class="card"><div class="n">${B.wcpm}</div><div class="l">WCPM · unfamiliar</div><span class="band-tag ${cB[1]}">${cB[0]}</span></div>`; bands.push(cB[0]); accs.push(B.acc); }
+  const worstAcc = accs.length ? Math.min(...accs) : null;
+  if(worstAcc !== null){ const x = accBand(worstAcc); cards += `<div class="card"><div class="n">${worstAcc}%</div><div class="l">Lowest accuracy</div><span class="band-tag ${x[1]}">${x[0]}</span></div>`; }
+  $("cards").innerHTML = cards || "<div class='card'><div class='l'>No parts administered</div></div>";
+
+  const gf = $("gapflag");
+  let gap = "", gapFlagVal = "";
+  if(A && B){
+    gap = A.wcpm - B.wcpm;
+    const flag = A.wcpm > 0 && gap > 0.2 * A.wcpm;
+    gapFlagVal = flag ? "FLAG" : "OK";
+    gf.style.display = "block";
+    gf.className = "gapflag " + (flag ? "bad" : "good");
+    gf.textContent = flag
+      ? `Familiar/unfamiliar gap: ${gap} WCPM (over 20% of familiar rate). This pattern suggests memorization-supported reading rather than fluent decoding. Recommend the A–L decoding diagnostic.`
+      : `Familiar/unfamiliar gap: ${gap} WCPM. Within the expected range; decoding transfers to new text.`;
+  } else { gf.style.display = "none"; }
+
+  // interpretation: accurate-but-slow vs inaccurate profiles
+  const interp = $("interp");
+  if(worstAcc !== null && worstAcc >= 97 && bands.some(b => b !== "Benchmark")){
+    interp.style.display = "block"; interp.className = "gapflag bad";
+    interp.textContent = "Accurate but slow: accuracy is at benchmark while rate is not. This student needs fluency and automaticity practice (repeated reading, timed rereads), not decoding remediation. Expect few or no errors in the skill table below; that is the finding, not a gap in the data.";
+  } else if(worstAcc !== null && worstAcc < 93){
+    interp.style.display = "block"; interp.className = "gapflag bad";
+    const hot0 = SKILLS.filter(k => "ABCDEFGHIJKL".includes(k)); // placeholder scope
+    interp.textContent = "Accuracy below 93%: prioritize accuracy over speed. Administer the A–L decoding diagnostic before any rate-building work.";
+  } else { interp.style.display = "none"; }
+
+  const tally = {}; SKILLS.forEach(k=>tally[k]=0);
+  [p1r, A, B].filter(Boolean).forEach(p=>Object.entries(p.tally).forEach(([k,v])=>{ if(tally[k]!=null) tally[k]+=v; else tally.Gen+=v; }));
+  $("skHead").innerHTML = SKILLS.map(k=>`<th>${k}</th>`).join("");
+  $("skRow").innerHTML = SKILLS.map(k=>`<td class="${tally[k]>=2?'hot':''}">${tally[k]}</td>`).join("");
+  const hotLevels = ["C","D","E","F","G","H","I","J","K","L"].filter(k => tally[k] >= 2);
+  const flagged = (worstAcc !== null && worstAcc < 93) || bands.includes("Intensive");
+  if(flagged){
+    flagsMap[S.name + "|" + S.window] = hotLevels;
+    if(hotLevels.length && interp.style.display === "block"){
+      interp.textContent += " Suggested starting levels: " + hotLevels.join(", ") + " (marked in the diagnostic level picker).";
+    }
+  }
+
+  const missedWords = [...new Set([p1r, A, B].filter(Boolean).flatMap(p=>p.missedWords||[]))];
+  S.result = {
+    action:"result", timestamp:new Date().toISOString(), name:S.name, grade:g, window:S.window, examiner:S.examiner, parts:partsStr,
+    cspm:p1r?p1r.cspm:"", syllRead:p1r?p1r.read:"", syllErrors:p1r?p1r.errors:"", acc1:p1r?p1r.acc:"", band1:c1?c1[0]:"",
+    wcpmA:A?A.wcpm:"", wordsA:A?A.read:"", errA:A?A.errors:"", accA:A?A.acc:"", bandA:cA?cA[0]:"",
+    wcpmB:B?B.wcpm:"", wordsB:B?B.read:"", errB:B?B.errors:"", accB:B?B.acc:"", bandB:cB?cB[0]:"",
+    gap, gapFlag:gapFlagVal, tally, missedWords,
+    audio1: REC.uploads.p1 || "", audioA: REC.uploads.pA || "", audioB: REC.uploads.pB || ""
+  };
+
+  /* annotated passage + audio review (works immediately, using the local recording if present) */
+  let annoHTML = "";
+  if(p1r && p1r.allItems) annoHTML += renderAnnoBlock("Part 1 · Word Reading", p1r.allItems, "p1");
+  if(A && A.allItems) annoHTML += renderAnnoBlock("Passage A (familiar)", A.allItems, "pA");
+  if(B && B.allItems) annoHTML += renderAnnoBlock("Passage B (unfamiliar)", B.allItems, "pB");
+  $("annoBody").innerHTML = annoHTML || "<p style='color:var(--grey)'>No passage data for this session.</p>";
+  $("annoLegend").innerHTML = renderLegend();
+  const audioKeys = ["p1","pA","pB"].filter(k => REC.localBlobs[k]);
+  $("audioPlayers").innerHTML = audioKeys.map(k=>`<audio id="aud-${k}" src="${REC.localBlobs[k]}" preload="auto"></audio>`).join("");
+  $("annoBody").onclick = e=>{
+    const sp = e.target.closest(".playable"); if(!sp) return;
+    const audio = $("aud-" + sp.dataset.audio); if(!audio) return;
+    audio.currentTime = Math.max(0, parseFloat(sp.dataset.t) - 1.2);
+    audio.play();
+  };
+  $("attnBody").innerHTML = renderAttentionAreas(tally, missedWords);
+  resetTagPanel("res");
+
+  show("scr-res");
+  saveResult();
+}
+async function saveResult(){
+  const sl = $("saveline");
+  if(SCRIPT_URL.startsWith("PASTE")){ sl.textContent = "Not connected to a Sheet. Use Copy Summary."; sl.className="saveline fail"; return; }
+  try{
+    await fetch(SCRIPT_URL, {method:"POST", headers:{"Content-Type":"text/plain"}, body:JSON.stringify(S.result)});
+    sl.textContent = "Saved to Google Sheet ✓"; sl.className = "saveline ok";
+  }catch(e){ sl.textContent = "Could not save (no connection). Use Copy Summary so nothing is lost."; sl.className = "saveline fail"; }
+}
+$("copyBtn").addEventListener("click", ()=>{
+  const r = S.result, t = r.tally;
+  const lines = [`KRIAH FLUENCY — ${r.name} (Gr ${r.grade}, ${r.window}) ${new Date().toLocaleDateString()}  Parts: ${r.parts}`];
+  if(r.cspm !== "") lines.push(`Word list: ${r.cspm} CSPM (${r.acc1}% acc) — ${r.band1}`);
+  if(r.wcpmA !== "") lines.push(`Passage A familiar: ${r.wcpmA} WCPM (${r.accA}%) — ${r.bandA}`);
+  if(r.wcpmB !== "") lines.push(`Passage B unfamiliar: ${r.wcpmB} WCPM (${r.accB}%) — ${r.bandB}`);
+  if(r.gap !== "") lines.push(`Gap: ${r.gap} (${r.gapFlag})`);
+  lines.push(`Errors by skill: ${SKILLS.filter(k=>t[k]).map(k=>k+":"+t[k]).join("  ") || "none"}`);
+  if(r.readingStyle && r.readingStyle.length) lines.push(`Reading style: ${r.readingStyle.join(", ")}`);
+  if(r.behavior && r.behavior.length) lines.push(`Behavior: ${r.behavior.join(", ")}`);
+  if(r.notes) lines.push(`Notes: ${r.notes}`);
+  lines.push(`Examiner: ${r.examiner||"-"}`);
+  navigator.clipboard.writeText(lines.join("\n")).then(()=>{ $("copyBtn").textContent = "Copied ✓"; setTimeout(()=>$("copyBtn").textContent="Copy summary",1500); });
+});
+$("againBtn").addEventListener("click", ()=>location.reload());
+$("wsFromResultsBtn").addEventListener("click", ()=>{
+  const r = S.result;
+  openWorksheet(r.name + " · Grade " + r.grade + " · " + r.window, "Practice Sheet",
+    "Based on the fluency exam completed " + new Date().toLocaleDateString(),
+    r.tally, r.missedWords, null, "scr-res");
+});
+
+/* ============ DECODING DIAGNOSTIC (A–L) ============ */
+const LEVELS = [{"id":"A","desc":"Letter / Sound + Vowel Recognition","items":["ל","ז","תּ","ר","ם","ב","צ","מ","שׁ","ך","פּ","ו","ק","ף","ג","כ","ט","א","נ","ת","ץ","בּ","י","ה","ן","כּ","שֹ","פ","ס","ד","ח","ע","ָ","ַ","ֵ","ֶ","ִ","ֻ","ְ","וּ","וֹ"],"labels":["Letter","Letter","Letter","Letter","Letter","Letter","Letter","Letter","Letter","Letter","Letter","Letter","Letter","Letter","Letter","Letter","Letter","Letter","Letter","Letter","Letter","Letter","Letter","Letter","Letter","Letter","Letter","Letter","Letter","Letter","Letter","Letter","Vowel","Vowel","Vowel","Vowel","Vowel","Vowel","Vowel","Vowel","Vowel"]},{"id":"B","desc":"C+V blend / C+V+C blend","items":["פֶּ","טׂ","בֻ","קֵ","חִ","שֻׁב","גָד","רֵק","דֻר","מָן"],"labels":["CV blend","CV blend","CV blend","CV blend","CV blend","CVC blend","CVC blend","CVC blend","CVC blend","CVC blend"]},{"id":"C","desc":"CVCV / CVCVCV blend","items":["פֶּלֶ","עַמִ","יָבֹ","צֻרֵ","בִּקֵעַ","זַמֵרֻ","כֹּתָבֵ","טַפֵּנֻ"],"labels":["CVCV","CVCV","CVCV","CVCV","CVCVCV","CVCVCV","CVCVCV","CVCVCV"]},{"id":"D","desc":"Cholom Vav (Maleh) / Shoorook","items":["בּוֹקֶר","יַכּוּ","חוֹלֵק","וֶעֶזוּז","יוֹצֵא","וּמָלֵא","שׁוֹפָר","לוּלָב"],"labels":["Cholom Vav","Shoorook","Cholom Vav","Shoorook","Cholom Vav","Shoorook","Cholom Vav","Shoorook"]},{"id":"E","desc":"Similar looking letters","items":["כָּזֶה","בֶּצַע","הִנוֹ","חָלָב","וֶרֶד","זֶבֶד","טַלִית","מֶלַח","כֻּלָם","כַּנֵס","אוֹצָרוֹ","עָנָוִים","הַשְֹכֵּל","הַׂשֵמוֹת"],"labels":["Similar letters","Similar letters","Similar letters","Similar letters","Similar letters","Similar letters","Similar letters","Similar letters","Similar letters","Similar letters","Similar letters","Similar letters","Similar letters","Similar letters"]},{"id":"F","desc":"Similar looking Sofiot","items":["מְצַוֶךָּ","כָּמוֹךָ","דֶרֶךְ","רָצוּף","קִבּוּץ","חַלּוֹן","קִבֵּץ","אַף"],"labels":["Sofit","Sofit","Sofit","Sofit","Sofit","Sofit","Sofit","Sofit"]},{"id":"G","desc":"Patach Ganuva (Ach vs Cha)","items":["נִתּוּחַ","פָּתַח","יָרֵחַ","שׁוֹלֵחַ","טָבוּחַ","פּוֹתֵחַ","יִפָּתֵחַ","שָׁלַח"],"labels":["Ganuva (ach)","Normal order","Ganuva (ach)","Ganuva (ach)","Ganuva (ach)","Ganuva (ach)","Ganuva (ach)","Normal order"]},{"id":"H","desc":"Silent Hei","items":["הֻכָּה","אֶמוּנָה","תּוֹרָה","בְּרָכָה","לַיְלָה","מִשְׁפָּחָה","קוֹמָה","שָׂדֶה"],"labels":["Silent Hei","Silent Hei","Silent Hei","Silent Hei","Silent Hei","Silent Hei","Silent Hei","Silent Hei"]},{"id":"I","desc":"Sounded & Silent Yud","items":["אַבוֹתַי","גוֹיֶךָ","אַבוֹתָיו","גָלוּי","עָלָיו","בָּנָיו","דְּבָרָיו","עָלַי"],"labels":["Sounded","Sounded","Silent","Sounded","Silent","Silent","Silent","Sounded"]},{"id":"J","desc":"Double duty Cholom","items":["מׂשֵל","תִּגשֹׁ","לָשֹבַע","נְפָׂשֹת","יִטשׁ","עׂשֶֹה","שֹׁמֵעַ","חַשֹךְ"],"labels":["Double Cholom","Double Cholom","Double Cholom","Double Cholom","Double Cholom","Double Cholom","Double Cholom","Double Cholom"]},{"id":"K","desc":"Articulated Vav","items":["עָוֹן","עַוֹנֵי","מִצְוֹת","עֲוֹנוֹת","מִצְוֹתֵיכֶם","עֲוֹנוֹתֵינוּ","תִּקְוָה","מִקְוֶה"],"labels":["Articulated Vav","Articulated Vav","Articulated Vav","Articulated Vav","Articulated Vav","Articulated Vav","Articulated Vav","Articulated Vav"]},{"id":"L","desc":"Shva Nah / Shva Nach","items":["מְאׂד","זִמְּרָה","הַלְלוּ","תִּשְׁמְרוּ","בָּךְ","וַיַשְׁקְ","חֶבְלֵי","יִצְרֵי"],"labels":["Shva Nah","Shva Nah","Shva Nach","Shva Nach","Shva Nach","Shva Nah","Shva Nach","Shva Nah"]}];
+
+const DG = { done:{}, cur:null, idx:0, answers:[] };
+
+$("beginDiagBtn").addEventListener("click", ()=>{
+  S.name = $("studentSel").value || $("newName").value.trim();
+  S.grade = $("gradeSel").value; S.window = $("windowSel").value; S.examiner = $("examiner").value.trim();
+  $("whoami").textContent = S.name + " · Gr " + S.grade + " · " + S.window;
+  $("diagWho").textContent = S.name + " · Grade " + S.grade + " · " + S.window;
+  $("levelsTitleText").textContent = S.grade === "2" ? "Kriah Assessment · choose a level" : "Decoding Diagnostic · choose a level";
+  DG.done = {}; renderLevels(); resetTagPanel("diag"); show("scr-levels");
+});
+
+let showLevelA = false;
+function renderLevels(){
+  const isG2 = S.grade === "2";
+  const effectiveShowA = showLevelA || isG2;
+  let pool = LEVELS;
+  if(isG2 && S.window === "Fall"){
+    pool = LEVELS.filter(l => "ABCDEFGHI".includes(l.id));
+  }
+  const shown = pool.filter(l => l.id !== "A" || effectiveShowA);
+  let html = shown.map(l=>{
+    const r = DG.done[l.id];
+    let score = "<span class='lscore' style='color:var(--grey)'>Not assessed</span>";
+    if(r){
+      const pct = Math.round(r.correct/r.total*100);
+      const cls = pct>=90?"good":pct>=70?"mid":"low";
+      score = `<span class="lscore ${cls}">${r.correct}/${r.total} · ${pct}%</span>`;
+    }
+    const sug = (flagsMap[S.name + "|" + S.window] || []).includes(l.id);
+    const sugTag = sug ? `<div style="font-size:11.5px; font-weight:700; color:var(--gold); margin-top:4px">★ SUGGESTED from fluency errors</div>` : "";
+    return `<div class="lvlcard" data-lvl="${l.id}" style="${sug?'border-color:var(--gold); border-width:2.5px;':''}"><div class="lid">Level ${l.id}</div><div class="ldesc">${l.desc}</div>${sugTag}${score}</div>`;
+  }).join("");
+  if(!effectiveShowA) html += `<div class="lvlcard" id="showA" style="border-style:dashed; opacity:.75"><div class="lid" style="font-size:15px">+ Show Level A</div><div class="ldesc">Letter/vowel recognition. Rarely needed in grades 3–8; tap only for a student who cannot access Level B.</div></div>`;
+  if(isG2 && S.window === "Fall") html += `<div class="lvlcard" style="border-style:dashed; opacity:.6; cursor:default"><div class="lid" style="font-size:15px">Levels J–L</div><div class="ldesc">Not administered in Fall for Grade 2. These unlock at Winter/Spring testing.</div></div>`;
+  $("lvlGrid").innerHTML = html;
+}
+$("lvlGrid").addEventListener("click", e=>{
+  const c = e.target.closest(".lvlcard"); if(!c) return;
+  if(c.id === "showA"){ showLevelA = true; renderLevels(); return; }
+  if(!c.dataset.lvl) return;
+  DG.cur = LEVELS.find(l=>l.id===c.dataset.lvl); DG.idx = 0; DG.answers = [];
+  $("diagLvlTitle").textContent = "Level " + DG.cur.id + " · " + DG.cur.desc;
+  renderDiagItem(); show("scr-diag");
+});
+function renderDiagItem(){
+  $("diagItem").textContent = DG.cur.items[DG.idx];
+  $("diagLabel").textContent = DG.cur.labels ? DG.cur.labels[DG.idx] : "";
+  $("diagProg").textContent = (DG.idx+1) + " / " + DG.cur.items.length;
+}
+function diagMark(ok){
+  DG.answers.push(ok);
+  DG.idx++;
+  if(DG.idx >= DG.cur.items.length){
+    const missed = DG.cur.items.filter((_,i)=>!DG.answers[i]);
+    DG.done[DG.cur.id] = { correct: DG.answers.filter(Boolean).length, total: DG.cur.items.length, missed };
+    renderLevels(); show("scr-levels");
+  } else renderDiagItem();
+}
+$("diagRight").addEventListener("click", ()=>diagMark(true));
+$("diagWrong").addEventListener("click", ()=>diagMark(false));
+$("diagBack").addEventListener("click", ()=>show("scr-levels"));
+document.addEventListener("keydown", e=>{
+  if(!$("scr-diag").classList.contains("active")) return;
+  if(e.key==="c"||e.key==="C"||e.key==="ArrowRight") diagMark(true);
+  if(e.key==="x"||e.key==="X"||e.key==="ArrowLeft") diagMark(false);
+});
+$("diagFinish").addEventListener("click", async ()=>{
+  const levels = {}, missedParts = [];
+  LEVELS.forEach(l=>{
+    const r = DG.done[l.id];
+    levels[l.id] = r ? `${r.correct}/${r.total} (${Math.round(r.correct/r.total*100)}%)` : "";
+    if(r && r.missed.length) missedParts.push(l.id + ": " + r.missed.join(" "));
+  });
+  const payload = { action:"diagnostic", timestamp:new Date().toISOString(),
+    name:S.name, grade:S.grade, window:S.window, examiner:S.examiner,
+    levels, missed: missedParts.join("  |  ") };
+  const sl = $("diagSaveline"); sl.style.display = "block"; $("diagAgain").style.display = "block";
+  $("diagWorksheetBtn").style.display = missedParts.length ? "block" : "none";
+  $("diagWorksheetBtn").onclick = ()=>{
+    const missedByLevel = LEVELS.map(l=>{
+      const r = DG.done[l.id];
+      return (r && r.missed.length) ? {id:l.id, desc:l.desc, missed:r.missed} : null;
+    }).filter(Boolean);
+    openWorksheet(S.name + " · Grade " + S.grade + " · " + S.window, "Practice Sheet",
+      "Based on the decoding diagnostic completed " + new Date().toLocaleDateString(),
+      null, null, missedByLevel, "scr-levels");
+  };
+  if(SCRIPT_URL.startsWith("PASTE")){ sl.textContent = "Not connected to a Sheet. Results shown above only."; sl.className = "saveline fail"; return; }
+  try{
+    await fetch(SCRIPT_URL, {method:"POST", headers:{"Content-Type":"text/plain"}, body:JSON.stringify(payload)});
+    sl.textContent = "Diagnostic saved to Google Sheet ✓"; sl.className = "saveline ok";
+  }catch(e){ sl.textContent = "Could not save (no connection)."; sl.className = "saveline fail"; }
+});
+$("diagAgain").addEventListener("click", ()=>location.reload());
+
+/* diag button enables with the same conditions */
+const _checkReady = checkReady;
+checkReady = function(){
+  _checkReady();
+  $("beginDiagBtn").disabled = $("beginBtn").disabled;
+};
+
+/* ============ CLASS DASHBOARD (shared renderer, admin + teacher) ============ */
+function renderDashboard(rows, w, whoLabel){
+  $("dashWho").textContent = whoLabel;
+  $("thFlu").style.display = "";
+  $("dashBody").innerHTML = rows.length ? rows.map(s => {
+    const isG2 = String(s.grade) === "2";
+    const parts = doneMap[s.name + "|" + w];
+    const flu = isG2
+      ? "<span style='color:var(--grey)'>N/A · decoding only</span>"
+      : !parts
+        ? "<span style='color:var(--grey)'>Not yet</span>"
+        : parts === "1+A+B"
+          ? "<span style='color:var(--ok); font-weight:700'>Done ✓</span>"
+          : `<span style='color:#8a6d00; font-weight:700'>Partial (${parts})</span>`;
+    const row = (activeResultsCache||[]).find(r => r.name === s.name && r.window === w);
+    const fluInner = (!isG2 && parts)
+      ? `<button class="btn-ghost" style="padding:2px; font-size:inherit; text-align:left" data-srname="${s.name}" data-srwin="${w}" data-srtype="flu">${flu}</button>`
+      : flu;
+    const fluCell = `<td>${fluInner}</td>`;
+    const lv = diagMap[s.name + "|" + w];
+    const dgInner = lv && lv.length
+      ? `<span style='color:var(--navy); font-weight:600'>${lv.join(" · ")}</span>`
+      : "<span style='color:var(--grey)'>—</span>";
+    const dg = lv && lv.length
+      ? `<button class="btn-ghost" style="padding:2px; font-size:inherit; text-align:left" data-srname="${s.name}" data-srwin="${w}" data-srtype="diag">${dgInner}</button>`
+      : dgInner;
+    const wsBtn = row && row.tally
+      ? `<button class="btn-ghost" style="font-size:12.5px; padding:4px 2px" data-student="${s.name}">Practice sheet</button>`
+      : "";
+    return `<tr><td style="text-align:right; direction:rtl; padding:9px 10px; text-align:left">${s.name}</td>${fluCell}<td style="font-size:12.5px">${dg}</td><td>${wsBtn}</td></tr>`;
+  }).join("") : `<tr><td colspan='4' style='padding:16px; color:var(--grey)'>No active students for this selection.</td></tr>`;
+  show("scr-dash");
+}
+$("dashBtn").addEventListener("click", async ()=>{
+  const g = $("gradeSel").value, w = $("windowSel").value;
+  if(!w){ $("setupNotice").style.display="block"; $("setupNotice").textContent = "Pick an assessment window first, then open the dashboard."; return; }
+  if(!await loadAdmin()) return;
+  activeResultsCache = anlCache;
+  const rows = roster.filter(s => s.active && (!g || String(s.grade) === g));
+  renderDashboard(rows, w, (g ? "Grade " + g : "All grades") + " · " + w + " · admin view");
+});
+$("dashBody").addEventListener("click", e=>{
+  const wb = e.target.closest("button[data-student]");
+  if(wb){
+    const w = $("windowSel").value, name = wb.dataset.student;
+    const row = (activeResultsCache||[]).find(r => r.name === name && r.window === w);
+    if(!row) return;
+    openWorksheet(name + " · " + w, "Practice Sheet",
+      "Based on the most recent fluency exam on file",
+      row.tally, null, null, "scr-dash");
+    return;
+  }
+  const sb = e.target.closest("button[data-srname]");
+  if(sb){ openStudentResult(sb.dataset.srname, sb.dataset.srwin, sb.dataset.srtype); return; }
+});
+$("dashWorksheetBtn").addEventListener("click", ()=>{
+  const g = $("gradeSel").value, w = $("windowSel").value;
+  const rows = (activeResultsCache||[]).filter(r => (!w || r.window===w) && (!g || r.grade===g));
+  const sums = {}; SKILLS.forEach(k=>sums[k]=0);
+  rows.forEach(r=>Object.entries(r.tally||{}).forEach(([k,v])=>{ if(sums[k]!=null) sums[k]+=v; }));
+  openWorksheet((g?"Grade "+g:"All grades") + " · " + (w||"all windows"), "Grade Practice Sheet",
+    "Most common error patterns across " + rows.length + " assessment" + (rows.length===1?"":"s"),
+    sums, null, null, "scr-dash");
+});
+$("dashBack").addEventListener("click", ()=>show("scr-setup"));
+
+/* ============ SIGN IN / SIGN OUT ============ */
+let teacherName = null, teacherRoster = null, teacherResults = null, teacherSections = null;
+async function loadTeacher(){
+  if(SCRIPT_URL.startsWith("PASTE")){ window.alert("Not connected to a Sheet yet."); return false; }
+  const email = window.prompt("Your Emek email (e.g. djunik@emek.org):");
+  if(!email) return false;
+  const pass = window.prompt("Passcode:");
+  if(!pass) return false;
+  try{
+    const r = await fetch(SCRIPT_URL + "?action=teacher&email=" + encodeURIComponent(email) + "&pass=" + encodeURIComponent(pass));
+    const j = await r.json();
+    if(j.error){ window.alert("Email or passcode not recognized."); return false; }
+    teacherName = j.teacherName || email; teacherRoster = j.roster || []; teacherResults = j.results || [];
+    teacherSections = j.sections || [];
+    (j.diagDone || []).forEach(d => {
+      const k2 = d.name + "|" + d.window;
+      diagMap[k2] = (diagMap[k2] || []).concat(d.levels);
+    });
+    return true;
+  }catch(e){ window.alert("Could not reach the Sheet (offline?)."); return false; }
+}
+function enterAsTeacher(){
+  currentRole = "teacher";
+  scopeRoster = teacherRoster.filter(s => s.active);
+  const sect = teacherSections && teacherSections.length ? " · sections " + teacherSections.join(", ") : "";
+  $("signedInAs").textContent = "Signed in: " + teacherName + sect;
+  $("dashBtn").style.display = "none";
+  $("anlBtn").style.display = "none";
+  $("myClassBtn").style.display = "block";
+  $("myClassBtn").textContent = "My Class Dashboard →";
+  fillStudents();
+  show("scr-setup");
+}
+function enterAsAdmin(){
+  currentRole = "admin";
+  scopeRoster = roster;
+  $("signedInAs").textContent = "Signed in: Admin / Proctor (full school access)";
+  $("dashBtn").style.display = "block";
+  $("anlBtn").style.display = "block";
+  $("myClassBtn").style.display = "none";
+  fillStudents();
+  show("scr-setup");
+}
+$("signinTeacherBtn").addEventListener("click", async ()=>{
+  if(!await loadTeacher()) return;
+  enterAsTeacher();
+});
+$("signinAdminBtn").addEventListener("click", async ()=>{
+  if(!await loadAdmin()) return;
+  scopeRoster = roster;
+  enterAsAdmin();
+});
+$("signOutBtn").addEventListener("click", ()=>{
+  currentRole = null; scopeRoster = null;
+  teacherName = null; teacherRoster = null; teacherResults = null; teacherSections = null;
+  adminKey = null; adminLoaded = false; anlCache = null; activeResultsCache = null;
+  $("gradeSel").value = ""; $("windowSel").value = ""; $("studentSel").innerHTML = "<option value=''>Select student…</option>";
+  show("scr-signin");
+});
+
+/* ============ MY CLASS DASHBOARD ============ */
+$("myClassBtn").addEventListener("click", async ()=>{
+  const w = $("windowSel").value;
+  if(!w){ $("setupNotice").style.display="block"; $("setupNotice").textContent = "Pick an assessment window first, then open My Class."; return; }
+  activeResultsCache = teacherResults;
+  renderDashboard(scopeRoster, w, teacherName + "'s class · " + w);
+});
+
+/* ============ STUDENT RESULT DETAIL ============ */
+let activeResultsCache = null;
+function bandTag(band){
+  const cls = band==="Benchmark"?"b-bench":band==="Strategic"?"b-strat":band==="Intensive"?"b-int":"";
+  return band ? `<span class="band-tag ${cls}">${band}</span>` : "";
+}
+function openStudentResult(name, w, type){
+  $("srWho").textContent = name + " · " + w;
+  const matches = (activeResultsCache||[]).filter(r => r.name === name && r.window === w);
+  const r = matches[matches.length - 1];
+  let html = "";
+
+  if(r){
+    let cards = "";
+    if(r.cspm != null && r.cspm !== "") cards += `<div class="card"><div class="n">${r.cspm}</div><div class="l">CSPM · word list</div>${bandTag(r.band1)}</div>`;
+    if(r.wcpmA != null && r.wcpmA !== "") cards += `<div class="card"><div class="n">${r.wcpmA}</div><div class="l">WCPM · familiar</div>${bandTag(r.bandA)}</div>`;
+    if(r.wcpmB != null && r.wcpmB !== "") cards += `<div class="card"><div class="n">${r.wcpmB}</div><div class="l">WCPM · unfamiliar</div>${bandTag(r.bandB)}</div>`;
+    html += `<h2 class="step">Fluency Exam <span class="hint">Parts: ${r.parts||"—"}</span></h2>`;
+    html += cards ? `<div class="scorecards">${cards}</div>` : "<div class='notice'>No fluency parts saved for this window.</div>";
+    if(r.wcpmA && r.wcpmB){
+      const flag = r.gapFlag === "FLAG";
+      html += `<div class="gapflag ${flag?'bad':'good'}">Familiar/unfamiliar gap: ${r.wcpmA - r.wcpmB} WCPM ${flag ? "— flagged (over 20% of familiar rate)" : "— within expected range"}.</div>`;
+    }
+    const errEntries = SKILLS.filter(k => (r.tally||{})[k]);
+    if(errEntries.length){
+      html += `<h2 class="step">Errors by skill level</h2><table class="skills"><thead><tr>${errEntries.map(k=>`<th>${k}</th>`).join("")}</tr></thead><tbody><tr>${errEntries.map(k=>`<td class="${r.tally[k]>=2?'hot':''}">${r.tally[k]}</td>`).join("")}</tr></tbody></table>`;
+    }
+  } else {
+    html += "<div class='notice'>No fluency result found for this student and window.</div>";
+  }
+
+  const lv = diagMap[name + "|" + w];
+  html += `<h2 class="step">Decoding Diagnostic</h2>`;
+  html += (lv && lv.length)
+    ? `<div class="notice" style="border-left-color:var(--gold)">${lv.join(" &middot; ")}</div>`
+    : "<div class='notice'>No diagnostic levels recorded for this window.</div>";
+
+  $("srBody").innerHTML = html;
+  show("scr-studentres");
+}
+$("srBack").addEventListener("click", ()=>show("scr-dash"));
+
+/* ============ ADMIN GATE ============ */
+let adminKey = null, adminLoaded = false;
+async function loadAdmin(){
+  if(adminLoaded) return true;
+  if(SCRIPT_URL.startsWith("PASTE")){ anlCache = []; adminLoaded = true; return true; }
+  const key = adminKey || window.prompt("Enter the admin passcode:");
+  if(!key) return false;
+  try{
+    const r = await fetch(SCRIPT_URL + "?action=admin&key=" + encodeURIComponent(key));
+    const j = await r.json();
+    if(j.error){ window.alert("Incorrect passcode."); adminKey = null; return false; }
+    adminKey = key; adminLoaded = true;
+    anlCache = j.results || [];
+    (j.diagDone || []).forEach(d => {
+      const k2 = d.name + "|" + d.window;
+      diagMap[k2] = (diagMap[k2] || []).concat(d.levels);
+    });
+    return true;
+  }catch(e){ window.alert("Could not reach the Sheet (offline?)."); return false; }
+}
+
+/* ============ ANALYTICS ============ */
+let anlCache = null;
+function median(a){ if(!a.length) return null; const s=[...a].sort((x,y)=>x-y), m=Math.floor(s.length/2); return s.length%2?s[m]:Math.round((s[m-1]+s[m])/2); }
+function stackBar(label, counts){
+  const total = counts.B + counts.S + counts.I;
+  if(!total) return "";
+  const seg = (n, cls, txt) => n ? `<div class="${cls}" style="flex:${n}">${n} ${txt}</div>` : "";
+  return `<div class="stlbl">${label}</div><div class="stack">` +
+    seg(counts.B,"st-b","Benchmark") + seg(counts.S,"st-s","Strategic") + seg(counts.I,"st-i","Intensive") + `</div>`;
+}
+function bandCounts(rows, key){
+  const c = {B:0,S:0,I:0};
+  rows.forEach(r=>{ const b=r[key]; if(b==="Benchmark")c.B++; else if(b==="Strategic")c.S++; else if(b==="Intensive")c.I++; });
+  return c;
+}
+function renderAnl(){
+  const w = $("anlWin").value, g = $("anlGrade").value;
+  const rows = (anlCache||[]).filter(r => (!w || r.window===w) && (!g || r.grade===g));
+  const cspms = rows.map(r=>r.cspm).filter(v=>v!=null);
+  const wbs = rows.map(r=>r.wcpmB).filter(v=>v!=null);
+  const names = new Set(rows.map(r=>r.name));
+  const flags = rows.filter(r=>r.gapFlag==="FLAG").length;
+  $("anlCards").innerHTML = `
+    <div class="card"><div class="n">${names.size}</div><div class="l">Students tested</div></div>
+    <div class="card"><div class="n">${median(cspms) ?? "–"}</div><div class="l">Median CSPM</div></div>
+    <div class="card"><div class="n">${median(wbs) ?? "–"}</div><div class="l">Median WCPM (unfamiliar)</div></div>
+    <div class="card"><div class="n">${flags}</div><div class="l">Gap flags</div></div>`;
+  $("anlBands").innerHTML =
+    stackBar("Word list (CSPM)", bandCounts(rows.filter(r=>r.cspm!=null),"band1")) +
+    stackBar("Passage A · familiar (WCPM)", bandCounts(rows.filter(r=>r.wcpmA!=null),"bandA")) +
+    stackBar("Passage B · unfamiliar (WCPM)", bandCounts(rows.filter(r=>r.wcpmB!=null),"bandB")) ||
+    "<div class='notice'>No data for this selection yet.</div>";
+  const sums = {}; SKILLS.forEach(k=>sums[k]=0);
+  rows.forEach(r=>Object.entries(r.tally||{}).forEach(([k,v])=>{ if(sums[k]!=null) sums[k]+=v; }));
+  const mx = Math.max(1, ...Object.values(sums));
+  $("anlErr").innerHTML = SKILLS.map(k=>
+    `<div class="hrow"><span class="hl">${k}</span><div class="htrack"><div class="hfill" style="width:${Math.round(sums[k]/mx*100)}%"></div></div><span class="hn">${sums[k]}</span></div>`
+  ).join("");
+}
+$("anlWin").addEventListener("change", renderAnl);
+$("anlGrade").addEventListener("change", renderAnl);
+$("anlBack").addEventListener("click", ()=>show("scr-setup"));
+$("anlBtn").addEventListener("click", async ()=>{
+  if(!await loadAdmin()) return;
+  show("scr-anl");
+  if(SCRIPT_URL.startsWith("PASTE")){ $("anlNote").style.display="block"; $("anlNote").textContent="Not connected to a Sheet, so there is no data to analyze yet."; }
+  renderAnl();
+});
+
+document.querySelectorAll(".exitBtn").forEach(b => b.addEventListener("click", ()=>{
+  if(window.confirm("Leave this assessment? Any unsaved progress will be discarded. (To keep completed fluency parts, use Skip on the remaining parts and save instead.)")) location.reload();
+}));
+
+loadRoster();
+</script>
+</body>
+</html>
