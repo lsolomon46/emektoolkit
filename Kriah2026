@@ -286,8 +286,11 @@ table.rr-class td,table.rr-class th{font-size:12.5px;}
     <button class="btn-ghost" id="addBtn">Save to roster</button>
     <span id="addMsg" style="font-size:13px;color:var(--grey)"></span>
   </div>
-  <label>Examiner</label>
-  <input type="text" id="examiner" placeholder="Your name">
+  <button class="btn-ghost" id="examinerToggle" style="display:none">+ Someone else is testing? Add their name</button>
+  <div id="examinerBox" style="display:none">
+    <label>Examiner <span style="font-weight:400;color:var(--grey)">(optional; leave blank if you are the examiner)</span></label>
+    <input type="text" id="examiner" placeholder="Examiner name">
+  </div>
   <button class="btn-primary" id="beginBtn" disabled>Begin Fluency Exam (timed, 3 parts)</button>
   <button class="btn-primary" id="beginDiagBtn" disabled style="background:var(--gold); color:#1E2430">Begin Decoding Diagnostic (A–L, untimed)</button>
   <button class="btn-ghost" id="dashBtn">View Class Dashboard (admin; pick a class, or leave blank for all) →</button>
@@ -835,7 +838,7 @@ function checkReady(){
 }
 $("beginBtn").addEventListener("click", ()=>{
   S.name = $("studentSel").value;
-  S.grade = $("gradeSel").value; S.window = $("windowSel").value; S.examiner = $("examiner").value.trim();
+  S.grade = $("gradeSel").value; S.window = $("windowSel").value; S.examiner = $("examiner").value.trim() || (currentRole==="admin" ? "Admin" : (teacherName||""));
   $("whoami").textContent = S.name + " · Gr " + S.grade + " · " + S.window;
   BANK = +S.grade <= 5 ? BANKS["35"] : BANKS["68"];
   document.querySelector("#scr-p1 .tstate b").textContent = "Part 1 · " + BANK.p1label;
@@ -1100,7 +1103,7 @@ const DG = { done:{}, cur:null, idx:0, answers:[] };
 
 $("beginDiagBtn").addEventListener("click", ()=>{
   S.name = $("studentSel").value;
-  S.grade = $("gradeSel").value; S.window = $("windowSel").value; S.examiner = $("examiner").value.trim();
+  S.grade = $("gradeSel").value; S.window = $("windowSel").value; S.examiner = $("examiner").value.trim() || (currentRole==="admin" ? "Admin" : (teacherName||""));
   $("whoami").textContent = S.name + " · Gr " + S.grade + " · " + S.window;
   $("diagWho").textContent = S.name + " · Grade " + S.grade + " · " + S.window;
   $("levelsTitleText").textContent = S.grade === "2" ? "Kriah Assessment · choose a level" : "Decoding Diagnostic · choose a level";
@@ -1271,6 +1274,7 @@ $("dashWorksheetBtn").addEventListener("click", ()=>{
 $("dashBack").addEventListener("click", ()=>show("scr-setup"));
 
 /* ============ SIGN IN / SIGN OUT ============ */
+let resumeInfo = null;
 let teacherName = null, teacherRoster = null, teacherResults = null, teacherSections = null;
 async function loadTeacher(name){
   if(SCRIPT_URL.startsWith("PASTE")) return {ok:false, msg:"Not connected to a Sheet yet."};
@@ -1301,10 +1305,12 @@ function enterAsTeacher(){
   $("anlBtn").style.display = "none";
   $("myClassBtn").style.display = "block";
   $("myClassBtn").textContent = "My Class Dashboard →";
+  $("examiner").value = ""; $("examinerBox").style.display = "none"; $("examinerToggle").style.display = "block";
   fillClasses();
   show("scr-setup");
 }
 function enterAsAdmin(){
+  $("examinerBox").style.display = "block"; $("examinerToggle").style.display = "none"; $("examiner").value = "";
   currentRole = "admin";
   scopeRoster = roster;
   $("signedInAs").textContent = "Signed in: Admin / Proctor (full school access)";
@@ -1344,6 +1350,7 @@ $("siForm").addEventListener("submit", async ev=>{
     siBusy(false);
     if(!res.ok){ siFail(res.msg); return; }
     try{ if($("siRemember").checked) localStorage.setItem("kriahTeacher", tname); else localStorage.removeItem("kriahTeacher"); }catch(e){}
+    resumeInfo = {role:"teacher", name:tname};
     enterAsTeacher();
   } else {
     const key = $("siAdminPass").value.trim();
@@ -1354,10 +1361,12 @@ $("siForm").addEventListener("submit", async ev=>{
     if(!ok){ siFail(adminErr || "Could not sign in."); return; }
     $("siAdminPass").value = "";
     scopeRoster = roster;
+    resumeInfo = {role:"admin", key:key};
     enterAsAdmin();
   }
 });
 $("signOutBtn").addEventListener("click", ()=>{
+  resumeInfo = null; try{ sessionStorage.removeItem("kriahResume"); }catch(e){}
   currentRole = null; scopeRoster = null;
   teacherName = null; teacherRoster = null; teacherResults = null; teacherSections = null;
   adminKey = null; adminLoaded = false; anlCache = null; activeResultsCache = null;
@@ -1512,10 +1521,36 @@ $("anlBtn").addEventListener("click", async ()=>{
 });
 
 document.querySelectorAll(".exitBtn").forEach(b => b.addEventListener("click", ()=>{
-  if(window.confirm("Leave this assessment? Any unsaved progress will be discarded. (To keep completed fluency parts, use Skip on the remaining parts and save instead.)")) location.reload();
+  if(window.confirm("Leave this assessment? Any unsaved progress will be discarded. (To keep completed fluency parts, use Skip on the remaining parts and save instead.)")) {
+    try{ if(resumeInfo) sessionStorage.setItem("kriahResume", JSON.stringify(Object.assign({}, resumeInfo, {win:$("windowSel").value, cls:$("classSel").value, stu:$("studentSel").value}))); }catch(e){}
+    location.reload();
+  }
 }));
 
+$("examinerToggle").addEventListener("click", ()=>{ $("examinerBox").style.display = "block"; $("examinerToggle").style.display = "none"; $("examiner").focus(); });
+async function tryResume(){
+  let r = null;
+  try{ r = JSON.parse(sessionStorage.getItem("kriahResume") || "null"); sessionStorage.removeItem("kriahResume"); }catch(e){}
+  if(!r) return;
+  try{
+    if(r.role === "teacher"){
+      const res = await loadTeacher(r.name);
+      if(!res.ok) return;
+      resumeInfo = {role:"teacher", name:r.name};
+      enterAsTeacher();
+    } else if(r.role === "admin"){
+      const ok = await loadAdmin(r.key, true);
+      if(!ok) return;
+      scopeRoster = roster; resumeInfo = {role:"admin", key:r.key};
+      enterAsAdmin();
+    } else return;
+    if(r.win){ $("windowSel").value = r.win; $("windowSel").dispatchEvent(new Event("change")); }
+    if(r.cls){ $("classSel").value = r.cls; $("classSel").dispatchEvent(new Event("change")); }
+    if(r.stu){ $("studentSel").value = r.stu; $("studentSel").dispatchEvent(new Event("change")); }
+  }catch(e){}
+}
 loadTeachers();
+tryResume();
 </script>
 </body>
 </html>
